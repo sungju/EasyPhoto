@@ -134,7 +134,6 @@
 		82A296FE181A043F00E5CCFE /* EasyPhoto */ = {
 			isa = PBXGroup;
 			children = (
-				82DA50D3181A1DF500D0EF9A /* Resources */,
 				82A29707181A043F00E5CCFE /* EasyPhotoAppDelegate.h */,
 				82A29708181A043F00E5CCFE /* EasyPhotoAppDelegate.m */,
 				82A2970A181A043F00E5CCFE /* Main.storyboard */,
@@ -182,13 +181,6 @@
 				82DA50D2181A1D6000D0EF9A /* GPUImageTests.octest */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		82DA50D3181A1DF500D0EF9A /* Resources */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = Resources;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
