@@ -242,6 +242,42 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
     // Dispose of any resources that can be recreated.
 }
 
+- (void)setTimerImage
+{
+    switch (self.timerMode) {
+        case 0:
+            self.timerBarButton.image = self.imageTimerNo;
+            break;
+        case 2:
+            self.timerBarButton.image = self.imageTimer2;
+            break;
+        case 5:
+            self.timerBarButton.image = self.imageTimer5;
+            break;
+        case 10:
+            self.timerBarButton.image = self.imageTimer10;
+            break;
+        default:
+            break;
+    }
+}
+
+#pragma mark -
+#pragma mark Config
+- (void)loadConfig
+{
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    self.filterNo = ((NSNumber *)[defaults valueForKey:@"filterNo"]).intValue;
+    self.frameNo = ((NSNumber *)[defaults valueForKey:@"frameNo"]).intValue;
+    self.vignetteMode = ((NSNumber *)[defaults valueForKey:@"vignetteMode"]).boolValue;
+    self.curMenuKind = ((NSNumber *)[defaults valueForKey:@"curMenuKind"]).intValue;
+    self.cameraPosition = ((NSNumber *)[defaults valueForKey:@"cameraPosition"]).intValue;
+    if ([defaults valueForKey:@"cameraPosition"] == nil)
+        self.cameraPosition = AVCaptureDevicePositionBack;
+    self.timerMode = ((NSNumber *)[defaults valueForKey:@"timerMode"]).intValue;
+    [self setTimerImage];
+}
+
 #pragma mark -
 #pragma mark Camera Setup
 - (void)setupCamera {
@@ -250,10 +286,9 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
     
     self.videoCamera.outputImageOrientation = UIInterfaceOrientationPortrait;
     
-    /*
     [self loadConfig];
     [self setCameraFilter:self.filterNo];
-    */
+
     [self.videoCamera startCameraCapture];
 }
 
@@ -407,6 +442,896 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
 
 - (void)hideFocusImageView:(id)data {
     [self.focusImageView setHidden:YES];
+}
+
+
+#pragma mark -
+#pragma mark Filter and Frame
+
+- (void)setCameraFilter:(int)no {
+    self.filterView.hidden = YES;
+    
+    if (self.filter != nil) {
+        if (self.originalImage == nil) {
+            [self.videoCamera removeTarget:self.filter];
+        }
+    }
+    GPUImageFilterGroup *newFilter = nil;
+    
+    switch (no) {
+        case 0:
+            newFilter = [self filterDefaultFilter];
+            break;
+        case 1:
+            newFilter = [self filterLomoFilter];
+            break;
+        case 2:
+            newFilter = [self filterAmaroFilter];
+            break;
+        case 3:
+            newFilter = [self filterWoodenFilter];
+            break;
+        case 4:
+            newFilter = [self filterGrayFilter];
+            break;
+        case 5:
+            newFilter = [self filterIlford400Filter];
+            break;
+        case 6:
+            newFilter = [self filterLomoWeirdFilter];
+            break;
+        case 7:
+            newFilter = [self filterNashvilleFilter];
+            break;
+        case 8:
+            newFilter = [self filterOldFilter];
+            break;
+        case 9:
+            newFilter = [self filterOldBlueFilter];
+            break;
+        case 10:
+            newFilter = [self filterOldDarkPaperFilter];
+            break;
+        case 11:
+            newFilter = [self filterOldGreenFilter];
+            break;
+        case 12:
+            newFilter = [self filterOldPaperFilter];
+            break;
+        case 13:
+            newFilter = [self filterSepiaFilter];
+            break;
+        case 14:
+            newFilter = [self filterSketchFilter];
+            break;
+        case 15:
+            newFilter = [self filterToonFilter];
+            break;
+        case 16:
+            newFilter = [self filterInvertFilter];
+            break;
+        case 17:
+            newFilter = [self filterEmbossFilter];
+            break;
+        default:
+            break;
+    }
+    if (newFilter != nil)
+        self.filter = newFilter;
+    
+    if (self.originalImage == nil) {
+        [self.videoCamera addTarget:self.filter];
+        
+        [self.filter addTarget:self.filterView];
+    } else {
+        self.stillFilterView.image = [self.filter imageByFilteringImage:self.originalImage];
+    }
+    
+    self.filterView.hidden = NO;
+}
+
+- (void)setCameraFrame:(int)no {
+    self.frameView.image = [self loadFrame:no];
+}
+
+- (GPUImageFilterGroup *)filterDefaultFilter {
+    GPUImageFilterGroup *newFilter;
+    
+    newFilter = [[GPUImageFilterGroup alloc] init];
+    
+    GPUImageCropFilter *cropFilter = [[GPUImageCropFilter alloc] initWithCropRegion:CGRectMake(0.f, 0.28f, 1.f, .84f)];
+    
+    GPUImageBrightnessFilter *brightFilter = [[GPUImageBrightnessFilter alloc] init];
+    [brightFilter setBrightness:0.0];
+    
+    GPUImageVignetteFilter *vignetteFilter = [[GPUImageVignetteFilter alloc] init];
+    if (self.vignetteMode == NO)
+        [vignetteFilter setVignetteEnd:5.0];
+    
+    [(GPUImageFilterGroup *)newFilter addFilter:cropFilter];
+    [(GPUImageFilterGroup *)newFilter addFilter:brightFilter];
+    [(GPUImageFilterGroup *)newFilter addFilter:vignetteFilter];
+    
+    [cropFilter prepareForImageCapture];
+    [brightFilter prepareForImageCapture];
+    [vignetteFilter prepareForImageCapture];
+    
+    [cropFilter addTarget:brightFilter];
+    [brightFilter addTarget:vignetteFilter];
+    
+    [(GPUImageFilterGroup *)newFilter setInitialFilters:[NSArray arrayWithObject:cropFilter]];
+    [(GPUImageFilterGroup *)newFilter setTerminalFilter:vignetteFilter];
+    
+    [newFilter prepareForImageCapture];
+    
+    return newFilter;
+}
+
+- (GPUImageFilterGroup *)filterOldPaperFilter {
+    GPUImageFilterGroup *newFilter;
+    
+    newFilter = [[GPUImageFilterGroup alloc] init];
+    
+    self.sourcePicture = [[GPUImagePicture alloc] initWithImage:[UIImage imageNamed:@"oldpaper1.jpg"] smoothlyScaleOutput:YES];
+    [self.sourcePicture processImage];
+    
+    GPUImageCropFilter *cropFilter = [[GPUImageCropFilter alloc] initWithCropRegion:CGRectMake(0.f, 0.28f, 1.f, .84f)];
+    
+    GPUImageGammaFilter *gammaFilter = [[GPUImageGammaFilter alloc] init];
+    [gammaFilter setGamma:1.0];
+    
+    GPUImageContrastFilter *contrastFilter = [[GPUImageContrastFilter alloc] init];
+    [contrastFilter setContrast:2.5];
+    
+    GPUImageSoftLightBlendFilter *imageFilter = [[GPUImageSoftLightBlendFilter alloc] init];
+    
+    GPUImageToneCurveFilter *curveFilter = [[GPUImageToneCurveFilter alloc] init];
+    [curveFilter setRedControlPoints:[NSArray arrayWithObjects:[NSValue valueWithCGPoint:CGPointMake(0.0, 0.15)], [NSValue valueWithCGPoint:CGPointMake(0.5, 0.65)], [NSValue valueWithCGPoint:CGPointMake(1.0, 0.85)], nil]];
+    
+    GPUImageVignetteFilter *vignetteFilter = [[GPUImageVignetteFilter alloc] init];
+    if (self.vignetteMode == NO)
+        [vignetteFilter setVignetteEnd:5.0];
+    
+    [(GPUImageFilterGroup *)newFilter addFilter:cropFilter];
+    [(GPUImageFilterGroup *)newFilter addFilter:gammaFilter];
+    [(GPUImageFilterGroup *)newFilter addFilter:contrastFilter];
+    [(GPUImageFilterGroup *)newFilter addFilter:imageFilter];
+    [(GPUImageFilterGroup *)newFilter addFilter:curveFilter];
+    [(GPUImageFilterGroup *)newFilter addFilter:vignetteFilter];
+    
+    [cropFilter prepareForImageCapture];
+    [gammaFilter prepareForImageCapture];
+    [contrastFilter prepareForImageCapture];
+    [imageFilter prepareForImageCapture];
+    [curveFilter prepareForImageCapture];
+    [vignetteFilter prepareForImageCapture];
+    
+    [cropFilter addTarget:gammaFilter];
+    [gammaFilter addTarget:contrastFilter];
+    [contrastFilter addTarget:imageFilter];
+    [imageFilter addTarget:curveFilter];
+    [curveFilter addTarget:vignetteFilter];
+    
+    [(GPUImageFilterGroup *)newFilter setInitialFilters:[NSArray arrayWithObject:cropFilter]];
+    [(GPUImageFilterGroup *)newFilter setTerminalFilter:vignetteFilter];
+    
+    [self.sourcePicture addTarget:imageFilter];
+    
+    [newFilter prepareForImageCapture];
+    
+    return newFilter;
+}
+
+- (GPUImageFilterGroup *)filterOldBlueFilter {
+    GPUImageFilterGroup *newFilter;
+    
+    newFilter = [[GPUImageFilterGroup alloc] init];
+    
+    self.sourcePicture = [[GPUImagePicture alloc] initWithImage:[UIImage imageNamed:@"oldpaper3.jpg"] smoothlyScaleOutput:YES];
+    [self.sourcePicture processImage];
+    
+    GPUImageCropFilter *cropFilter = [[GPUImageCropFilter alloc] initWithCropRegion:CGRectMake(0.f, 0.28f, 1.f, .84f)];
+    
+    GPUImageGammaFilter *gammaFilter = [[GPUImageGammaFilter alloc] init];
+    [gammaFilter setGamma:1.0];
+    
+    GPUImageContrastFilter *contrastFilter = [[GPUImageContrastFilter alloc] init];
+    [contrastFilter setContrast:2.5];
+    
+    GPUImageSoftLightBlendFilter *imageFilter = [[GPUImageSoftLightBlendFilter alloc] init];
+    
+    GPUImageToneCurveFilter *curveFilter = [[GPUImageToneCurveFilter alloc] init];
+    [curveFilter setBlueControlPoints:[NSArray arrayWithObjects:[NSValue valueWithCGPoint:CGPointMake(0.0, 0.15)], [NSValue valueWithCGPoint:CGPointMake(0.5, 0.65)], [NSValue valueWithCGPoint:CGPointMake(1.0, 0.85)], nil]];
+    
+    GPUImageVignetteFilter *vignetteFilter = [[GPUImageVignetteFilter alloc] init];
+    if (self.vignetteMode == NO)
+        [vignetteFilter setVignetteEnd:5.0];
+    
+    [(GPUImageFilterGroup *)newFilter addFilter:cropFilter];
+    [(GPUImageFilterGroup *)newFilter addFilter:gammaFilter];
+    [(GPUImageFilterGroup *)newFilter addFilter:contrastFilter];
+    [(GPUImageFilterGroup *)newFilter addFilter:imageFilter];
+    [(GPUImageFilterGroup *)newFilter addFilter:curveFilter];
+    [(GPUImageFilterGroup *)newFilter addFilter:vignetteFilter];
+    
+    [cropFilter prepareForImageCapture];
+    [gammaFilter prepareForImageCapture];
+    [contrastFilter prepareForImageCapture];
+    [imageFilter prepareForImageCapture];
+    [curveFilter prepareForImageCapture];
+    [vignetteFilter prepareForImageCapture];
+    
+    [cropFilter addTarget:gammaFilter];
+    [gammaFilter addTarget:contrastFilter];
+    [contrastFilter addTarget:imageFilter];
+    [imageFilter addTarget:curveFilter];
+    [curveFilter addTarget:vignetteFilter];
+    
+    [(GPUImageFilterGroup *)newFilter setInitialFilters:[NSArray arrayWithObject:cropFilter]];
+    [(GPUImageFilterGroup *)newFilter setTerminalFilter:vignetteFilter];
+    
+    [self.sourcePicture addTarget:imageFilter];
+    
+    [newFilter prepareForImageCapture];
+    
+    return newFilter;
+}
+
+- (GPUImageFilterGroup *)filterOldGreenFilter {
+    GPUImageFilterGroup *newFilter;
+    
+    newFilter = [[GPUImageFilterGroup alloc] init];
+    
+    self.sourcePicture = [[GPUImagePicture alloc] initWithImage:[UIImage imageNamed:@"oldpaper4.jpg"] smoothlyScaleOutput:YES];
+    [self.sourcePicture processImage];
+    
+    GPUImageCropFilter *cropFilter = [[GPUImageCropFilter alloc] initWithCropRegion:CGRectMake(0.f, 0.28f, 1.f, .84f)];
+    
+    GPUImageGammaFilter *gammaFilter = [[GPUImageGammaFilter alloc] init];
+    [gammaFilter setGamma:1.0];
+    
+    GPUImageContrastFilter *contrastFilter = [[GPUImageContrastFilter alloc] init];
+    [contrastFilter setContrast:2.5];
+    
+    GPUImageSoftLightBlendFilter *imageFilter = [[GPUImageSoftLightBlendFilter alloc] init];
+    
+    GPUImageToneCurveFilter *curveFilter = [[GPUImageToneCurveFilter alloc] init];
+    [curveFilter setRgbCompositeControlPoints:[NSArray arrayWithObjects:[NSValue valueWithCGPoint:CGPointMake(0.0, 0.15)], [NSValue valueWithCGPoint:CGPointMake(0.5, 0.65)], [NSValue valueWithCGPoint:CGPointMake(1.0, 0.85)], nil]];
+    //[curveFilter setRGBControlPoints:[NSArray arrayWithObjects:[NSValue valueWithCGPoint:CGPointMake(0.0, 0.15)], [NSValue valueWithCGPoint:CGPointMake(0.5, 0.65)], [NSValue valueWithCGPoint:CGPointMake(1.0, 0.85)], nil]];
+    
+    GPUImageVignetteFilter *vignetteFilter = [[GPUImageVignetteFilter alloc] init];
+    if (self.vignetteMode == NO)
+        [vignetteFilter setVignetteEnd:5.0];
+    
+    [(GPUImageFilterGroup *)newFilter addFilter:cropFilter];
+    [(GPUImageFilterGroup *)newFilter addFilter:gammaFilter];
+    [(GPUImageFilterGroup *)newFilter addFilter:contrastFilter];
+    [(GPUImageFilterGroup *)newFilter addFilter:imageFilter];
+    [(GPUImageFilterGroup *)newFilter addFilter:curveFilter];
+    [(GPUImageFilterGroup *)newFilter addFilter:vignetteFilter];
+    
+    [cropFilter prepareForImageCapture];
+    [gammaFilter prepareForImageCapture];
+    [contrastFilter prepareForImageCapture];
+    [imageFilter prepareForImageCapture];
+    [curveFilter prepareForImageCapture];
+    [vignetteFilter prepareForImageCapture];
+    
+    [cropFilter addTarget:gammaFilter];
+    [gammaFilter addTarget:contrastFilter];
+    [contrastFilter addTarget:imageFilter];
+    [imageFilter addTarget:curveFilter];
+    [curveFilter addTarget:vignetteFilter];
+    
+    [(GPUImageFilterGroup *)newFilter setInitialFilters:[NSArray arrayWithObject:cropFilter]];
+    [(GPUImageFilterGroup *)newFilter setTerminalFilter:vignetteFilter];
+    
+    [self.sourcePicture addTarget:imageFilter];
+    
+    [newFilter prepareForImageCapture];
+    
+    return newFilter;
+}
+
+- (GPUImageFilterGroup *)filterOldDarkPaperFilter {
+    GPUImageFilterGroup *newFilter;
+    
+    newFilter = [[GPUImageFilterGroup alloc] init];
+    
+    self.sourcePicture = [[GPUImagePicture alloc] initWithImage:[UIImage imageNamed:@"oldpaper2.jpg"] smoothlyScaleOutput:YES];
+    [self.sourcePicture processImage];
+    
+    GPUImageCropFilter *cropFilter = [[GPUImageCropFilter alloc] initWithCropRegion:CGRectMake(0.f, 0.28f, 1.f, .84f)];
+    
+    GPUImageBrightnessFilter *brightFilter = [[GPUImageBrightnessFilter alloc] init];
+    [brightFilter setBrightness:-0.1];
+    
+    GPUImageContrastFilter *contrastFilter = [[GPUImageContrastFilter alloc] init];
+    [contrastFilter setContrast:1.5];
+    
+    GPUImageSoftLightBlendFilter *imageFilter = [[GPUImageSoftLightBlendFilter alloc] init];
+    
+    GPUImageToneCurveFilter *curveFilter = [[GPUImageToneCurveFilter alloc] init];
+    [curveFilter setRedControlPoints:[NSArray arrayWithObjects:[NSValue valueWithCGPoint:CGPointMake(0.0, 0.15)], [NSValue valueWithCGPoint:CGPointMake(0.5, 0.65)], [NSValue valueWithCGPoint:CGPointMake(1.0, 0.85)], nil]];
+    
+    GPUImageVignetteFilter *vignetteFilter = [[GPUImageVignetteFilter alloc] init];
+    if (self.vignetteMode == NO)
+        [vignetteFilter setVignetteEnd:5.0];
+    
+    [(GPUImageFilterGroup *)newFilter addFilter:cropFilter];
+    [(GPUImageFilterGroup *)newFilter addFilter:brightFilter];
+    [(GPUImageFilterGroup *)newFilter addFilter:contrastFilter];
+    [(GPUImageFilterGroup *)newFilter addFilter:imageFilter];
+    [(GPUImageFilterGroup *)newFilter addFilter:curveFilter];
+    [(GPUImageFilterGroup *)newFilter addFilter:vignetteFilter];
+    
+    [cropFilter prepareForImageCapture];
+    [brightFilter prepareForImageCapture];
+    [contrastFilter prepareForImageCapture];
+    [imageFilter prepareForImageCapture];
+    [curveFilter prepareForImageCapture];
+    [vignetteFilter prepareForImageCapture];
+    
+    [cropFilter addTarget:brightFilter];
+    [brightFilter addTarget:contrastFilter];
+    [contrastFilter addTarget:imageFilter];
+    [imageFilter addTarget:curveFilter];
+    [curveFilter addTarget:vignetteFilter];
+    
+    [(GPUImageFilterGroup *)newFilter setInitialFilters:[NSArray arrayWithObject:cropFilter]];
+    [(GPUImageFilterGroup *)newFilter setTerminalFilter:vignetteFilter];
+    
+    [self.sourcePicture addTarget:imageFilter];
+    
+    [newFilter prepareForImageCapture];
+    
+    return newFilter;
+}
+
+- (GPUImageFilterGroup *)filterAmaroFilter {
+    GPUImageFilterGroup *newFilter;
+    
+    newFilter = [[GPUImageFilterGroup alloc] init];
+    
+    self.sourcePicture = [[GPUImagePicture alloc] initWithImage:[UIImage imageNamed:@"amaro.jpg"] smoothlyScaleOutput:YES];
+    [self.sourcePicture processImage];
+    
+    GPUImageCropFilter *cropFilter = [[GPUImageCropFilter alloc] initWithCropRegion:CGRectMake(0.f, 0.28f, 1.f, .84f)];
+    
+    GPUImageGammaFilter *gammaFilter = [[GPUImageGammaFilter alloc] init];
+    [gammaFilter setGamma:1.0];
+    
+    GPUImageContrastFilter *contrastFilter = [[GPUImageContrastFilter alloc] init];
+    [contrastFilter setContrast:1.5];
+    
+    GPUImageSoftLightBlendFilter *imageFilter = [[GPUImageSoftLightBlendFilter alloc] init];
+    
+    GPUImageToneCurveFilter *curveFilter = [[GPUImageToneCurveFilter alloc] init];
+    [curveFilter setRedControlPoints:[NSArray arrayWithObjects:[NSValue valueWithCGPoint:CGPointMake(0.0, 0.15)], [NSValue valueWithCGPoint:CGPointMake(0.5, 0.65)], [NSValue valueWithCGPoint:CGPointMake(1.0, 0.85)], nil]];
+    
+    GPUImageVignetteFilter *vignetteFilter = [[GPUImageVignetteFilter alloc] init];
+    if (self.vignetteMode == NO)
+        [vignetteFilter setVignetteEnd:5.0];
+    
+    [(GPUImageFilterGroup *)newFilter addFilter:cropFilter];
+    [(GPUImageFilterGroup *)newFilter addFilter:gammaFilter];
+    [(GPUImageFilterGroup *)newFilter addFilter:contrastFilter];
+    [(GPUImageFilterGroup *)newFilter addFilter:imageFilter];
+    [(GPUImageFilterGroup *)newFilter addFilter:curveFilter];
+    [(GPUImageFilterGroup *)newFilter addFilter:vignetteFilter];
+    
+    [cropFilter prepareForImageCapture];
+    [gammaFilter prepareForImageCapture];
+    [contrastFilter prepareForImageCapture];
+    [imageFilter prepareForImageCapture];
+    [curveFilter prepareForImageCapture];
+    [vignetteFilter prepareForImageCapture];
+    
+    [cropFilter addTarget:gammaFilter];
+    [gammaFilter addTarget:contrastFilter];
+    [contrastFilter addTarget:imageFilter];
+    [imageFilter addTarget:curveFilter];
+    [curveFilter addTarget:vignetteFilter];
+    
+    [(GPUImageFilterGroup *)newFilter setInitialFilters:[NSArray arrayWithObject:cropFilter]];
+    [(GPUImageFilterGroup *)newFilter setTerminalFilter:vignetteFilter];
+    
+    [self.sourcePicture addTarget:imageFilter];
+    
+    [newFilter prepareForImageCapture];
+    
+    return newFilter;
+}
+
+- (GPUImageFilterGroup *)filterOldFilter {
+    GPUImageFilterGroup *newFilter;
+    
+    newFilter = [[GPUImageFilterGroup alloc] init];
+    
+    GPUImageCropFilter *cropFilter = [[GPUImageCropFilter alloc] initWithCropRegion:CGRectMake(0.f, 0.28f, 1.f, .84f)];
+    
+    GPUImageGammaFilter *gammaFilter = [[GPUImageGammaFilter alloc] init];
+    [gammaFilter setGamma:0.5];
+    
+    GPUImageExposureFilter *exposureFilter = [[GPUImageExposureFilter alloc] init];
+    [exposureFilter setExposure:0.1];
+    
+    GPUImageVignetteFilter *vignetteFilter = [[GPUImageVignetteFilter alloc] init];
+    if (self.vignetteMode == NO)
+        [vignetteFilter setVignetteEnd:5.0];
+    
+    [(GPUImageFilterGroup *)newFilter addFilter:cropFilter];
+    [(GPUImageFilterGroup *)newFilter addFilter:gammaFilter];
+    [(GPUImageFilterGroup *)newFilter addFilter:exposureFilter];
+    [(GPUImageFilterGroup *)newFilter addFilter:vignetteFilter];
+    
+    [cropFilter prepareForImageCapture];
+    [gammaFilter prepareForImageCapture];
+    [exposureFilter prepareForImageCapture];
+    [vignetteFilter prepareForImageCapture];
+    
+    [cropFilter addTarget:gammaFilter];
+    [gammaFilter addTarget:exposureFilter];
+    [exposureFilter addTarget:vignetteFilter];
+    
+    [(GPUImageFilterGroup *)newFilter setInitialFilters:[NSArray arrayWithObject:cropFilter]];
+    [(GPUImageFilterGroup *)newFilter setTerminalFilter:vignetteFilter];
+    
+    [newFilter prepareForImageCapture];
+    
+    return newFilter;
+}
+
+- (GPUImageFilterGroup *)filterNashvilleFilter {
+    GPUImageFilterGroup *newFilter;
+    
+    newFilter = [[GPUImageFilterGroup alloc] init];
+    
+    self.sourcePicture = [[GPUImagePicture alloc] initWithImage:[UIImage imageNamed:@"nashville.png"] smoothlyScaleOutput:YES];
+    [self.sourcePicture processImage];
+    
+    GPUImageCropFilter *cropFilter = [[GPUImageCropFilter alloc] initWithCropRegion:CGRectMake(0.f, 0.28f, 1.f, .84f)];
+    
+    GPUImageBrightnessFilter *brightFilter = [[GPUImageBrightnessFilter alloc] init];
+    [brightFilter setBrightness:-0.1];
+    
+    GPUImageSoftLightBlendFilter *nashvilleFilter = [[GPUImageSoftLightBlendFilter alloc] init];
+    
+    GPUImageVignetteFilter *vignetteFilter = [[GPUImageVignetteFilter alloc] init];
+    if (self.vignetteMode == NO)
+        [vignetteFilter setVignetteEnd:5.0];
+    
+    [(GPUImageFilterGroup *)newFilter addFilter:cropFilter];
+    [(GPUImageFilterGroup *)newFilter addFilter:brightFilter];
+    [(GPUImageFilterGroup *)newFilter addFilter:nashvilleFilter];
+    [(GPUImageFilterGroup *)newFilter addFilter:vignetteFilter];
+    
+    [cropFilter prepareForImageCapture];
+    [brightFilter prepareForImageCapture];
+    [nashvilleFilter prepareForImageCapture];
+    [vignetteFilter prepareForImageCapture];
+    
+    [cropFilter addTarget:brightFilter];
+    [brightFilter addTarget:nashvilleFilter];
+    [nashvilleFilter addTarget:vignetteFilter];
+    
+    [(GPUImageFilterGroup *)newFilter setInitialFilters:[NSArray arrayWithObject:cropFilter]];
+    [(GPUImageFilterGroup *)newFilter setTerminalFilter:vignetteFilter];
+    
+    [self.sourcePicture addTarget:nashvilleFilter];
+    
+    [newFilter prepareForImageCapture];
+    
+    return newFilter;
+}
+
+- (GPUImageFilterGroup *)filterLomoFilter {
+    GPUImageFilterGroup *newFilter;
+    
+    newFilter = [[GPUImageFilterGroup alloc] init];
+    
+    self.sourcePicture = [[GPUImagePicture alloc] initWithImage:[UIImage imageNamed:@"nashville.png"] smoothlyScaleOutput:YES];
+    [self.sourcePicture processImage];
+    
+    GPUImageCropFilter *cropFilter = [[GPUImageCropFilter alloc] initWithCropRegion:CGRectMake(0.f, 0.28f, 1.f, .84f)];
+    
+    GPUImageBrightnessFilter *brightFilter = [[GPUImageBrightnessFilter alloc] init];
+    [brightFilter setBrightness:0.05];
+    GPUImageContrastFilter *contrastFilter = [[GPUImageContrastFilter alloc] init];
+    [contrastFilter setContrast:1.5];
+    
+    GPUImageSoftLightBlendFilter *imageFilter = [[GPUImageSoftLightBlendFilter alloc] init];
+    
+    GPUImageToneCurveFilter *curveFilter = [[GPUImageToneCurveFilter alloc] init];
+    [curveFilter setRgbCompositeControlPoints:[NSArray arrayWithObjects:[NSValue valueWithCGPoint:CGPointMake(0.0, 0.15)], [NSValue valueWithCGPoint:CGPointMake(0.5, 0.5)], [NSValue valueWithCGPoint:CGPointMake(1.0, 0.75)], nil]];
+    //[curveFilter setRGBControlPoints:[NSArray arrayWithObjects:[NSValue valueWithCGPoint:CGPointMake(0.0, 0.15)], [NSValue valueWithCGPoint:CGPointMake(0.5, 0.5)], [NSValue valueWithCGPoint:CGPointMake(1.0, 0.75)], nil]];
+    
+    GPUImageVignetteFilter *vignetteFilter = [[GPUImageVignetteFilter alloc] init];
+    if (self.vignetteMode == NO)
+        [vignetteFilter setVignetteEnd:5.0];
+    
+    [(GPUImageFilterGroup *)newFilter addFilter:cropFilter];
+    [(GPUImageFilterGroup *)newFilter addFilter:brightFilter];
+    [(GPUImageFilterGroup *)newFilter addFilter:contrastFilter];
+    [(GPUImageFilterGroup *)newFilter addFilter:imageFilter];
+    [(GPUImageFilterGroup *)newFilter addFilter:curveFilter];
+    [(GPUImageFilterGroup *)newFilter addFilter:vignetteFilter];
+    
+    [cropFilter prepareForImageCapture];
+    [brightFilter prepareForImageCapture];
+    [contrastFilter prepareForImageCapture];
+    [imageFilter prepareForImageCapture];
+    [curveFilter prepareForImageCapture];
+    [vignetteFilter prepareForImageCapture];
+    
+    [cropFilter addTarget:brightFilter];
+    [brightFilter addTarget:contrastFilter];
+    [contrastFilter addTarget:imageFilter];
+    [imageFilter addTarget:curveFilter];
+    [curveFilter addTarget:vignetteFilter];
+    
+    [(GPUImageFilterGroup *)newFilter setInitialFilters:[NSArray arrayWithObject:cropFilter]];
+    [(GPUImageFilterGroup *)newFilter setTerminalFilter:vignetteFilter];
+    
+    [self.sourcePicture addTarget:imageFilter];
+    
+    [newFilter prepareForImageCapture];
+    
+    return newFilter;
+}
+
+- (GPUImageFilterGroup *)filterLomoWeirdFilter {
+    GPUImageFilterGroup *newFilter;
+    
+    newFilter = [[GPUImageFilterGroup alloc] init];
+    
+    self.sourcePicture = [[GPUImagePicture alloc] initWithImage:[UIImage imageNamed:@"nashville.png"] smoothlyScaleOutput:YES];
+    [self.sourcePicture processImage];
+    
+    GPUImageCropFilter *cropFilter = [[GPUImageCropFilter alloc] initWithCropRegion:CGRectMake(0.f, 0.28f, 1.f, .84f)];
+    
+    GPUImageBrightnessFilter *brightFilter = [[GPUImageBrightnessFilter alloc] init];
+    [brightFilter setBrightness:0.1];
+    GPUImageContrastFilter *contrastFilter = [[GPUImageContrastFilter alloc] init];
+    [contrastFilter setContrast:1.5];
+    
+    GPUImageSoftLightBlendFilter *imageFilter = [[GPUImageSoftLightBlendFilter alloc] init];
+    
+    GPUImageToneCurveFilter *curveFilter = [[GPUImageToneCurveFilter alloc] init];
+    [curveFilter setRedControlPoints:[NSArray arrayWithObjects:[NSValue valueWithCGPoint:CGPointMake(0.0, 0.0)], [NSValue valueWithCGPoint:CGPointMake(0.5, 0.95)], [NSValue valueWithCGPoint:CGPointMake(0.7, 1.0)], nil]];
+    [curveFilter setBlueControlPoints:[NSArray arrayWithObjects:[NSValue valueWithCGPoint:CGPointMake(0.0, 0.0)], [NSValue valueWithCGPoint:CGPointMake(0.5, 0.95)], [NSValue valueWithCGPoint:CGPointMake(1.0, 0.85)], nil]];
+    
+    GPUImageVignetteFilter *vignetteFilter = [[GPUImageVignetteFilter alloc] init];
+    if (self.vignetteMode == NO)
+        [vignetteFilter setVignetteEnd:5.0];
+    
+    [(GPUImageFilterGroup *)newFilter addFilter:cropFilter];
+    [(GPUImageFilterGroup *)newFilter addFilter:brightFilter];
+    [(GPUImageFilterGroup *)newFilter addFilter:contrastFilter];
+    [(GPUImageFilterGroup *)newFilter addFilter:imageFilter];
+    [(GPUImageFilterGroup *)newFilter addFilter:curveFilter];
+    [(GPUImageFilterGroup *)newFilter addFilter:vignetteFilter];
+    
+    [cropFilter prepareForImageCapture];
+    [brightFilter prepareForImageCapture];
+    [contrastFilter prepareForImageCapture];
+    [imageFilter prepareForImageCapture];
+    [curveFilter prepareForImageCapture];
+    [vignetteFilter prepareForImageCapture];
+    
+    [cropFilter addTarget:brightFilter];
+    [brightFilter addTarget:contrastFilter];
+    [contrastFilter addTarget:imageFilter];
+    [imageFilter addTarget:curveFilter];
+    [curveFilter addTarget:vignetteFilter];
+    
+    [(GPUImageFilterGroup *)newFilter setInitialFilters:[NSArray arrayWithObject:cropFilter]];
+    [(GPUImageFilterGroup *)newFilter setTerminalFilter:vignetteFilter];
+    
+    [self.sourcePicture addTarget:imageFilter];
+    
+    [newFilter prepareForImageCapture];
+    
+    return newFilter;
+}
+
+- (GPUImageFilterGroup *)filterSepiaFilter {
+    GPUImageFilterGroup *newFilter;
+    
+    newFilter = [[GPUImageFilterGroup alloc] init];
+    
+    GPUImageCropFilter *cropFilter = [[GPUImageCropFilter alloc] initWithCropRegion:CGRectMake(0.f, 0.28f, 1.f, .84f)];
+    
+    GPUImageSepiaFilter *sepiaFilter = [[GPUImageSepiaFilter alloc] init];
+    
+    GPUImageVignetteFilter *vignetteFilter = [[GPUImageVignetteFilter alloc] init];
+    if (self.vignetteMode == NO)
+        [vignetteFilter setVignetteEnd:5.0];
+    
+    [(GPUImageFilterGroup *)newFilter addFilter:cropFilter];
+    [(GPUImageFilterGroup *)newFilter addFilter:sepiaFilter];
+    [(GPUImageFilterGroup *)newFilter addFilter:vignetteFilter];
+    
+    [cropFilter prepareForImageCapture];
+    [sepiaFilter prepareForImageCapture];
+    [vignetteFilter prepareForImageCapture];
+    
+    [cropFilter addTarget:sepiaFilter];
+    [sepiaFilter addTarget:vignetteFilter];
+    
+    [(GPUImageFilterGroup *)newFilter setInitialFilters:[NSArray arrayWithObject:cropFilter]];
+    [(GPUImageFilterGroup *)newFilter setTerminalFilter:vignetteFilter];
+    
+    [newFilter prepareForImageCapture];
+    
+    return newFilter;
+}
+
+- (GPUImageFilterGroup *)filterGrayFilter {
+    GPUImageFilterGroup *newFilter;
+    
+    newFilter = [[GPUImageFilterGroup alloc] init];
+    
+    GPUImageCropFilter *cropFilter = [[GPUImageCropFilter alloc] initWithCropRegion:CGRectMake(0.f, 0.28f, 1.f, .84f)];
+    
+    GPUImageGrayscaleFilter *grayFilter = [[GPUImageGrayscaleFilter alloc] init];
+    
+    GPUImageBrightnessFilter *brightFilter = [[GPUImageBrightnessFilter alloc] init];
+    [brightFilter setBrightness:0.1];
+    
+    GPUImageContrastFilter *contrastFilter = [[GPUImageContrastFilter alloc] init];
+    [contrastFilter setContrast:1.5];
+    
+    GPUImageVignetteFilter *vignetteFilter = [[GPUImageVignetteFilter alloc] init];
+    if (self.vignetteMode == NO)
+        [vignetteFilter setVignetteEnd:5.0];
+    
+    [(GPUImageFilterGroup *)newFilter addFilter:cropFilter];
+    [(GPUImageFilterGroup *)newFilter addFilter:grayFilter];
+    [(GPUImageFilterGroup *)newFilter addFilter:brightFilter];
+    [(GPUImageFilterGroup *)newFilter addFilter:contrastFilter];
+    [(GPUImageFilterGroup *)newFilter addFilter:vignetteFilter];
+    
+    [cropFilter prepareForImageCapture];
+    [grayFilter prepareForImageCapture];
+    [brightFilter prepareForImageCapture];
+    [contrastFilter prepareForImageCapture];
+    [vignetteFilter prepareForImageCapture];
+    
+    [cropFilter addTarget:grayFilter];
+    [grayFilter addTarget:brightFilter];
+    [brightFilter addTarget:contrastFilter];
+    [contrastFilter addTarget:vignetteFilter];
+    
+    [(GPUImageFilterGroup *)newFilter setInitialFilters:[NSArray arrayWithObject:cropFilter]];
+    [(GPUImageFilterGroup *)newFilter setTerminalFilter:vignetteFilter];
+    
+    [newFilter prepareForImageCapture];
+    
+    return newFilter;
+}
+
+- (GPUImageFilterGroup *)filterIlford400Filter {
+    GPUImageFilterGroup *newFilter;
+    
+    newFilter = [[GPUImageFilterGroup alloc] init];
+    
+    GPUImageCropFilter *cropFilter = [[GPUImageCropFilter alloc] initWithCropRegion:CGRectMake(0.f, 0.28f, 1.f, .84f)];
+    
+    GPUImageGrayscaleFilter *grayFilter = [[GPUImageGrayscaleFilter alloc] init];
+    
+    GPUImageContrastFilter *contrastFilter = [[GPUImageContrastFilter alloc] init];
+    [contrastFilter setContrast:3.5];
+    
+    GPUImageVignetteFilter *vignetteFilter = [[GPUImageVignetteFilter alloc] init];
+    if (self.vignetteMode == NO)
+        [vignetteFilter setVignetteEnd:5.0];
+    
+    [(GPUImageFilterGroup *)newFilter addFilter:cropFilter];
+    [(GPUImageFilterGroup *)newFilter addFilter:grayFilter];
+    [(GPUImageFilterGroup *)newFilter addFilter:contrastFilter];
+    [(GPUImageFilterGroup *)newFilter addFilter:vignetteFilter];
+    
+    [cropFilter prepareForImageCapture];
+    [grayFilter prepareForImageCapture];
+    [contrastFilter prepareForImageCapture];
+    [vignetteFilter prepareForImageCapture];
+    
+    [cropFilter addTarget:grayFilter];
+    [grayFilter addTarget:contrastFilter];
+    [contrastFilter addTarget:vignetteFilter];
+    
+    [(GPUImageFilterGroup *)newFilter setInitialFilters:[NSArray arrayWithObject:cropFilter]];
+    [(GPUImageFilterGroup *)newFilter setTerminalFilter:vignetteFilter];
+    
+    [newFilter prepareForImageCapture];
+    
+    return newFilter;
+}
+
+- (GPUImageFilterGroup *)filterSketchFilter {
+    GPUImageFilterGroup *newFilter;
+    
+    newFilter = [[GPUImageFilterGroup alloc] init];
+    
+    GPUImageCropFilter *cropFilter = [[GPUImageCropFilter alloc] initWithCropRegion:CGRectMake(0.f, 0.28f, 1.f, .84f)];
+    
+    GPUImageSketchFilter *sketchFilter = [[GPUImageSketchFilter alloc] init];
+    
+    GPUImageVignetteFilter *vignetteFilter = [[GPUImageVignetteFilter alloc] init];
+    if (self.vignetteMode == NO)
+        [vignetteFilter setVignetteEnd:5.0];
+    
+    [(GPUImageFilterGroup *)newFilter addFilter:cropFilter];
+    [(GPUImageFilterGroup *)newFilter addFilter:sketchFilter];
+    [(GPUImageFilterGroup *)newFilter addFilter:vignetteFilter];
+    
+    [cropFilter prepareForImageCapture];
+    [sketchFilter prepareForImageCapture];
+    [vignetteFilter prepareForImageCapture];
+    
+    [cropFilter addTarget:sketchFilter];
+    [sketchFilter addTarget:vignetteFilter];
+    
+    [(GPUImageFilterGroup *)newFilter setInitialFilters:[NSArray arrayWithObject:cropFilter]];
+    [(GPUImageFilterGroup *)newFilter setTerminalFilter:vignetteFilter];
+    
+    [newFilter prepareForImageCapture];
+    
+    return newFilter;
+}
+
+- (GPUImageFilterGroup *)filterToonFilter {
+    GPUImageFilterGroup *newFilter;
+    
+    newFilter = [[GPUImageFilterGroup alloc] init];
+    
+    GPUImageCropFilter *cropFilter = [[GPUImageCropFilter alloc] initWithCropRegion:CGRectMake(0.f, 0.28f, 1.f, .84f)];
+    
+    GPUImageToonFilter *toonFilter = [[GPUImageToonFilter alloc] init];
+    
+    GPUImageVignetteFilter *vignetteFilter = [[GPUImageVignetteFilter alloc] init];
+    if (self.vignetteMode == NO)
+        [vignetteFilter setVignetteEnd:5.0];
+    
+    [(GPUImageFilterGroup *)newFilter addFilter:cropFilter];
+    [(GPUImageFilterGroup *)newFilter addFilter:toonFilter];
+    [(GPUImageFilterGroup *)newFilter addFilter:vignetteFilter];
+    
+    [cropFilter prepareForImageCapture];
+    [toonFilter prepareForImageCapture];
+    [vignetteFilter prepareForImageCapture];
+    
+    [cropFilter addTarget:toonFilter];
+    [toonFilter addTarget:vignetteFilter];
+    
+    [(GPUImageFilterGroup *)newFilter setInitialFilters:[NSArray arrayWithObject:cropFilter]];
+    [(GPUImageFilterGroup *)newFilter setTerminalFilter:vignetteFilter];
+    
+    [newFilter prepareForImageCapture];
+    
+    return newFilter;
+}
+
+- (GPUImageFilterGroup *)filterInvertFilter {
+    GPUImageFilterGroup *newFilter;
+    
+    newFilter = [[GPUImageFilterGroup alloc] init];
+    
+    GPUImageCropFilter *cropFilter = [[GPUImageCropFilter alloc] initWithCropRegion:CGRectMake(0.f, 0.28f, 1.f, .84f)];
+    
+    GPUImageColorInvertFilter *invertFilter = [[GPUImageColorInvertFilter alloc] init];
+    
+    GPUImageVignetteFilter *vignetteFilter = [[GPUImageVignetteFilter alloc] init];
+    if (self.vignetteMode == NO)
+        [vignetteFilter setVignetteEnd:5.0];
+    
+    [(GPUImageFilterGroup *)newFilter addFilter:cropFilter];
+    [(GPUImageFilterGroup *)newFilter addFilter:invertFilter];
+    [(GPUImageFilterGroup *)newFilter addFilter:vignetteFilter];
+    
+    [cropFilter prepareForImageCapture];
+    [invertFilter prepareForImageCapture];
+    [vignetteFilter prepareForImageCapture];
+    
+    [cropFilter addTarget:invertFilter];
+    [invertFilter addTarget:vignetteFilter];
+    
+    [(GPUImageFilterGroup *)newFilter setInitialFilters:[NSArray arrayWithObject:cropFilter]];
+    [(GPUImageFilterGroup *)newFilter setTerminalFilter:vignetteFilter];
+    
+    [newFilter prepareForImageCapture];
+    
+    return newFilter;
+}
+
+- (GPUImageFilterGroup *)filterEmbossFilter {
+    GPUImageFilterGroup *newFilter;
+    
+    newFilter = [[GPUImageFilterGroup alloc] init];
+    
+    GPUImageCropFilter *cropFilter = [[GPUImageCropFilter alloc] initWithCropRegion:CGRectMake(0.f, 0.28f, 1.f, .84f)];
+    
+    GPUImageEmbossFilter *embossFilter = [[GPUImageEmbossFilter alloc] init];
+    [embossFilter setIntensity:2.5];
+    
+    GPUImageVignetteFilter *vignetteFilter = [[GPUImageVignetteFilter alloc] init];
+    if (self.vignetteMode == NO)
+        [vignetteFilter setVignetteEnd:5.0];
+    
+    [(GPUImageFilterGroup *)newFilter addFilter:cropFilter];
+    [(GPUImageFilterGroup *)newFilter addFilter:embossFilter];
+    [(GPUImageFilterGroup *)newFilter addFilter:vignetteFilter];
+    
+    [cropFilter prepareForImageCapture];
+    [embossFilter prepareForImageCapture];
+    [vignetteFilter prepareForImageCapture];
+    
+    [cropFilter addTarget:embossFilter];
+    [embossFilter addTarget:vignetteFilter];
+    
+    [(GPUImageFilterGroup *)newFilter setInitialFilters:[NSArray arrayWithObject:cropFilter]];
+    [(GPUImageFilterGroup *)newFilter setTerminalFilter:vignetteFilter];
+    
+    [newFilter prepareForImageCapture];
+    
+    return newFilter;
+}
+
+
+- (GPUImageFilterGroup *)filterWoodenFilter {
+    GPUImageFilterGroup *newFilter;
+    
+    newFilter = [[GPUImageFilterGroup alloc] init];
+    
+    GPUImageCropFilter *cropFilter = [[GPUImageCropFilter alloc] initWithCropRegion:CGRectMake(0.f, 0.28f, 1.f, .84f)];
+    
+    self.sourcePicture = [[GPUImagePicture alloc] initWithImage:[UIImage imageNamed:@"wooden.png"] smoothlyScaleOutput:YES];
+    [self.sourcePicture processImage];
+    
+    GPUImageBrightnessFilter *brightFilter = [[GPUImageBrightnessFilter alloc] init];
+    [brightFilter setBrightness:0.1];
+    GPUImageContrastFilter *contrastFilter = [[GPUImageContrastFilter alloc] init];
+    [contrastFilter setContrast:1.5];
+    
+    GPUImageSoftLightBlendFilter *imageFilter = [[GPUImageSoftLightBlendFilter alloc] init];
+    
+    GPUImageToneCurveFilter *curveFilter = [[GPUImageToneCurveFilter alloc] init];
+    [curveFilter setRedControlPoints:[NSArray arrayWithObjects:[NSValue valueWithCGPoint:CGPointMake(0.0, 0.0)], [NSValue valueWithCGPoint:CGPointMake(0.5, 0.95)], [NSValue valueWithCGPoint:CGPointMake(0.7, 1.0)], nil]];
+    [curveFilter setBlueControlPoints:[NSArray arrayWithObjects:[NSValue valueWithCGPoint:CGPointMake(0.0, 0.0)], [NSValue valueWithCGPoint:CGPointMake(0.5, 0.95)], [NSValue valueWithCGPoint:CGPointMake(1.0, 0.85)], nil]];
+    
+    GPUImageVignetteFilter *vignetteFilter = [[GPUImageVignetteFilter alloc] init];
+    if (self.vignetteMode == NO)
+        [vignetteFilter setVignetteEnd:5.0];
+    
+    [(GPUImageFilterGroup *)newFilter addFilter:cropFilter];
+    [(GPUImageFilterGroup *)newFilter addFilter:brightFilter];
+    [(GPUImageFilterGroup *)newFilter addFilter:contrastFilter];
+    [(GPUImageFilterGroup *)newFilter addFilter:imageFilter];
+    [(GPUImageFilterGroup *)newFilter addFilter:curveFilter];
+    [(GPUImageFilterGroup *)newFilter addFilter:vignetteFilter];
+    
+    [cropFilter prepareForImageCapture];
+    [brightFilter prepareForImageCapture];
+    [contrastFilter prepareForImageCapture];
+    [imageFilter prepareForImageCapture];
+    [curveFilter prepareForImageCapture];
+    [vignetteFilter prepareForImageCapture];
+    
+    [cropFilter addTarget:brightFilter];
+    [brightFilter addTarget:contrastFilter];
+    [contrastFilter addTarget:imageFilter];
+    [imageFilter addTarget:curveFilter];
+    [curveFilter addTarget:vignetteFilter];
+    
+    [(GPUImageFilterGroup *)newFilter setInitialFilters:[NSArray arrayWithObject:cropFilter]];
+    [(GPUImageFilterGroup *)newFilter setTerminalFilter:vignetteFilter];
+    
+    [self.sourcePicture addTarget:imageFilter];
+    
+    [newFilter prepareForImageCapture];
+    
+    return newFilter;
 }
 
 @end
