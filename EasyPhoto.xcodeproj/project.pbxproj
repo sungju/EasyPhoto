@@ -21,6 +21,8 @@
 		82A2971A181A043F00E5CCFE /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 82A296FC181A043F00E5CCFE /* UIKit.framework */; };
 		82A29722181A043F00E5CCFE /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 82A29720181A043F00E5CCFE /* InfoPlist.strings */; };
 		82A29724181A043F00E5CCFE /* EasyPhotoTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 82A29723181A043F00E5CCFE /* EasyPhotoTests.m */; };
+		82A2972E181A046A00E5CCFE /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = 82A2972D181A046A00E5CCFE /* .gitignore */; };
+		82A29730181A048E00E5CCFE /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = 82A2972F181A048D00E5CCFE /* LICENSE */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -53,6 +55,8 @@
 		82A2971F181A043F00E5CCFE /* EasyPhotoTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "EasyPhotoTests-Info.plist"; sourceTree = "<group>"; };
 		82A29721181A043F00E5CCFE /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		82A29723181A043F00E5CCFE /* EasyPhotoTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = EasyPhotoTests.m; sourceTree = "<group>"; };
+		82A2972D181A046A00E5CCFE /* .gitignore */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
+		82A2972F181A048D00E5CCFE /* LICENSE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -82,6 +86,8 @@
 		82A296EC181A043F00E5CCFE = {
 			isa = PBXGroup;
 			children = (
+				82A2972F181A048D00E5CCFE /* LICENSE */,
+				82A2972D181A046A00E5CCFE /* .gitignore */,
 				82A296FE181A043F00E5CCFE /* EasyPhoto */,
 				82A2971D181A043F00E5CCFE /* EasyPhotoTests */,
 				82A296F7181A043F00E5CCFE /* Frameworks */,
@@ -229,9 +235,11 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				82A2972E181A046A00E5CCFE /* .gitignore in Resources */,
 				82A29711181A043F00E5CCFE /* Images.xcassets in Resources */,
 				82A29703181A043F00E5CCFE /* InfoPlist.strings in Resources */,
 				82A2970C181A043F00E5CCFE /* Main.storyboard in Resources */,
+				82A29730181A048E00E5CCFE /* LICENSE in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
