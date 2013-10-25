@@ -981,6 +981,7 @@
 					"../GPUImage/framework/**",
 				);
 				INFOPLIST_FILE = "EasyPhoto/EasyPhoto-Info.plist";
+				OTHER_LDFLAGS = " -ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
 			};
@@ -999,6 +1000,7 @@
 					"../GPUImage/framework/**",
 				);
 				INFOPLIST_FILE = "EasyPhoto/EasyPhoto-Info.plist";
+				OTHER_LDFLAGS = " -ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
 			};
