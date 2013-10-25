@@ -18,7 +18,7 @@
                             </imageView>
                             <view contentMode="scaleToFill" id="Yw6-Pf-VRK" userLabel="GPU Image View" customClass="GPUImageView">
                                 <rect key="frame" x="0.0" y="142" width="320" height="320"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                             </view>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" id="Rc4-5e-537">
@@ -30,8 +30,8 @@
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES" heightSizable="YES"/>
                             </imageView>
                             <view opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" id="XA0-Le-8n7">
-                                <rect key="frame" x="0.0" y="250" width="320" height="80"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <rect key="frame" x="0.0" y="244" width="320" height="80"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                 <subviews>
                                     <button autoresizesSubviews="NO" opaque="NO" contentMode="center" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="MaV-Vc-vBF">
                                         <rect key="frame" x="0.0" y="-10" width="320" height="90"/>
@@ -224,6 +224,21 @@
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                     </view>
+                    <connections>
+                        <outlet property="filmRollButton" destination="GZv-7e-I5v" id="R1I-g4-L4l"/>
+                        <outlet property="filterView" destination="Yw6-Pf-VRK" id="Ry1-Rk-Luh"/>
+                        <outlet property="flashButton" destination="eNF-oa-Ljb" id="igY-zy-0vK"/>
+                        <outlet property="flashView" destination="Gq8-e0-4Rc" id="422-9r-JgS"/>
+                        <outlet property="flipCameraButton" destination="PoF-dV-Yg9" id="0PM-h4-pPA"/>
+                        <outlet property="focusImageView" destination="Wo1-fo-f5T" id="Rzn-if-anF"/>
+                        <outlet property="frameView" destination="gXL-qn-HPL" id="drW-aY-0ls"/>
+                        <outlet property="stillFilterView" destination="Rc4-5e-537" id="yhG-b8-BvB"/>
+                        <outlet property="timerBarButton" destination="FGx-kV-fqg" id="OFB-dC-OwR"/>
+                        <outlet property="timerButton" destination="MaV-Vc-vBF" id="bOi-9j-iHE"/>
+                        <outlet property="timerView" destination="9Hu-nz-QOm" id="AP4-v8-hNa"/>
+                        <outlet property="toolBar" destination="lds-B0-K2L" id="cwA-Pu-zsw"/>
+                        <outlet property="vignetteButton" destination="P6K-ev-s2a" id="75b-Yr-s08"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="x5A-6p-PRh" sceneMemberID="firstResponder"/>
             </objects>

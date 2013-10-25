@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		82794B59181A5557007B4556 /* libGPUImage.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 82DA50D0181A1D6000D0EF9A /* libGPUImage.a */; };
+		82794B5B181A5566007B4556 /* AssetsLibrary.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 82794B5A181A5566007B4556 /* AssetsLibrary.framework */; };
+		82794B5D181A5E0F007B4556 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 82794B5C181A5E0F007B4556 /* AVFoundation.framework */; };
 		82A296F9181A043F00E5CCFE /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 82A296F8181A043F00E5CCFE /* Foundation.framework */; };
 		82A296FB181A043F00E5CCFE /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 82A296FA181A043F00E5CCFE /* CoreGraphics.framework */; };
 		82A296FD181A043F00E5CCFE /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 82A296FC181A043F00E5CCFE /* UIKit.framework */; };
@@ -172,6 +175,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		82794B5A181A5566007B4556 /* AssetsLibrary.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AssetsLibrary.framework; path = System/Library/Frameworks/AssetsLibrary.framework; sourceTree = SDKROOT; };
+		82794B5C181A5E0F007B4556 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		82A296F5181A043F00E5CCFE /* EasyPhoto.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = EasyPhoto.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		82A296F8181A043F00E5CCFE /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		82A296FA181A043F00E5CCFE /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -323,9 +328,12 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				82794B5D181A5E0F007B4556 /* AVFoundation.framework in Frameworks */,
+				82794B5B181A5566007B4556 /* AssetsLibrary.framework in Frameworks */,
 				82A296FB181A043F00E5CCFE /* CoreGraphics.framework in Frameworks */,
 				82A296FD181A043F00E5CCFE /* UIKit.framework in Frameworks */,
 				82A296F9181A043F00E5CCFE /* Foundation.framework in Frameworks */,
+				82794B59181A5557007B4556 /* libGPUImage.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -366,6 +374,8 @@
 		82A296F7181A043F00E5CCFE /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				82794B5C181A5E0F007B4556 /* AVFoundation.framework */,
+				82794B5A181A5566007B4556 /* AssetsLibrary.framework */,
 				82DA50C9181A1D6000D0EF9A /* GPUImage.xcodeproj */,
 				82A296F8181A043F00E5CCFE /* Foundation.framework */,
 				82A296FA181A043F00E5CCFE /* CoreGraphics.framework */,
@@ -965,6 +975,11 @@
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "EasyPhoto/EasyPhoto-Prefix.pch";
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
+					"../GPUImage/framework/**",
+				);
 				INFOPLIST_FILE = "EasyPhoto/EasyPhoto-Info.plist";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
@@ -978,6 +993,11 @@
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "EasyPhoto/EasyPhoto-Prefix.pch";
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
+					"../GPUImage/framework/**",
+				);
 				INFOPLIST_FILE = "EasyPhoto/EasyPhoto-Info.plist";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
