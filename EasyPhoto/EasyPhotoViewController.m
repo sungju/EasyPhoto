@@ -7,6 +7,7 @@
 //
 
 #import "EasyPhotoViewController.h"
+#import "SendPhotoViewController.h"
 
 @interface EasyPhotoViewController ()
 
@@ -236,6 +237,26 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
     self.imageTimer10 = [UIImage imageNamed:@"timer10.png"];
 }
 
+- (void)viewDidAppear:(BOOL)animated
+{
+    [self loadConfig];
+    
+    [self selectScrollMenu:self.filterScrollView fromFilter:0 toFilter:self.filterNo + 1];
+    [self selectScrollMenu:self.frameScrollView fromFilter:0 toFilter:self.frameNo + 1];
+    
+    if (self.videoCamera != nil && self.originalImage == nil) {
+        [self setCameraFrame:self.frameNo];
+        [self setCameraFilter:self.filterNo];
+        if (self.cameraPosition != self.videoCamera.cameraPosition)
+            [self.videoCamera rotateCamera];
+        [self.videoCamera resumeCameraCapture];
+        [self setFlashMenuStatus];
+        self.filmRollButton.image = [UIImage imageNamed:@"filmroll.png"];
+    } else {
+        self.filmRollButton.image = [UIImage imageNamed:@"camera.png"];
+    }
+}
+
 - (void)didReceiveMemoryWarning
 {
     [super didReceiveMemoryWarning];
@@ -340,22 +361,38 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
 #pragma mark -
 #pragma mark Scroll Menu
 
+- (void)selectScrollMenu:(UIScrollView *)scrollView fromFilter:(int)oldFilterNo toFilter:(int)newFilterNo {
+    UIView *view = nil;
+    NSArray *subviews = [scrollView subviews];
+    
+    for (view in subviews) {
+        if ([view isKindOfClass:[UIView class]]) {
+            if (view.tag == oldFilterNo) {
+                UIButton *button = (UIButton *)view;
+                [button setSelected:NO];
+            }
+            if (view.tag == newFilterNo) {
+                UIButton *button = (UIButton *)view;
+                [button setSelected:YES];
+            }
+        }
+    }
+}
+
 - (void)filterSelected:(UIButton *)button {
     int oldFilterNo = self.filterNo;
     self.filterNo = button.tag - 1;
-    /*
+
     [self selectScrollMenu:self.filterScrollView fromFilter:oldFilterNo + 1 toFilter:self.filterNo + 1];
     [self setCameraFilter:self.filterNo];
-     */
 }
 
 - (void)frameSelected:(UIButton *)button {
     int oldFrameNo = self.frameNo;
     self.frameNo = button.tag - 1;
-    /*
+
     [self selectScrollMenu:self.frameScrollView fromFilter:oldFrameNo + 1 toFilter:self.frameNo + 1];
     [self setCameraFrame:self.frameNo];
-     */
 }
 
 - (void)layoutScrollDetailViews:(UIScrollView *)scrollView withCount:(int)count
@@ -416,10 +453,59 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
 #pragma mark -
 #pragma mark Selectors
 
+- (void)hideMenus {
+    [UIView beginAnimations:nil context:nil];
+    [UIView setAnimationDuration:0.5];
+    [UIView setAnimationDelay:0.0];
+    [UIView setAnimationCurve:UIViewAnimationCurveEaseOut];
+    
+    self.flashView.hidden = YES;
+    self.timerView.hidden = YES;
+    
+    [UIView commitAnimations];
+}
+
+- (void)scrollMenuShow:(BOOL)show forScroll:(UIScrollView *)scrollView {
+    [UIView beginAnimations:nil context:nil];
+    [UIView setAnimationDuration:0.5];
+    [UIView setAnimationDelay:0.0];
+    
+    CGRect rect = scrollView.frame;
+    if (show) {
+        rect.origin.y = kMenuShowY;
+        [UIView setAnimationCurve:UIViewAnimationCurveEaseOut];
+    } else {
+        rect.origin.y = kMenuHideY;
+        [UIView setAnimationCurve:UIViewAnimationCurveEaseIn];
+    }
+    scrollView.frame = rect;
+    
+    rect = self.previewRect;
+    rect.origin.x = 0;
+    rect.origin.y = self.previewRect.origin.y - (show ? 20.0 : 0.0);
+    rect.size = self.previewRect.size;
+    self.frameView.frame = rect;
+    self.stillFilterView.frame = rect;
+    self.filterView.frame = rect;
+    
+    [UIView commitAnimations];
+}
+
+- (CGPoint)convertToPointOfInterestFromViewCoordinates:(CGPoint)viewCoordinates
+{
+    CGPoint pointOfInterest = CGPointMake(.5f, .5f);
+    CGSize frameSize;
+    CGRect screenRect = [[UIScreen mainScreen] bounds];
+    frameSize.height = screenRect.size.width;
+    frameSize.width = screenRect.size.height;
+    // Scale, switch x and y, and reverse x
+    pointOfInterest = CGPointMake(viewCoordinates.y / frameSize.height, 1.f - (viewCoordinates.x / frameSize.width));
+    
+    return pointOfInterest;
+}
 
 - (void)tapToAutoFocus:(UIGestureRecognizer *)gestureRecognizer
 {
-    /*
     [self hideMenus];
     [self scrollMenuShow:NO forScroll:self.frameScrollView];
     [self scrollMenuShow:NO forScroll:self.filterScrollView];
@@ -437,7 +523,6 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
     [self autoFocusAtPoint:convertedFocusPoint];
     
     [self performSelector:@selector(hideFocusImageView:) withObject:nil afterDelay:0.5];
-     */
 }
 
 - (void)hideFocusImageView:(id)data {
@@ -447,6 +532,32 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
 
 #pragma mark -
 #pragma mark Filter and Frame
+
+- (void)showSendPhotoViewController:(UIImage *)image {
+    SendPhotoViewController *sendPhotoViewController = [[SendPhotoViewController alloc] initWithNibName:@"SendPhotoViewController" bundle:nil];
+    
+    sendPhotoViewController.photoImage = image;
+    [self presentViewController:sendPhotoViewController animated:YES completion:^{
+        
+    }];
+}
+
+- (void)sendToTheTarget:(UIImage *)stillImage
+{
+    GPUImageAlphaBlendFilter *blendFilter = [[GPUImageAlphaBlendFilter alloc] init];
+    GPUImagePicture *imageToProcess = [[GPUImagePicture alloc] initWithImage:stillImage];
+    GPUImagePicture *border = [[GPUImagePicture alloc] initWithImage:self.frameView.image];
+    
+    blendFilter.mix = 1.0f;
+    [imageToProcess addTarget:blendFilter];
+    [border addTarget:blendFilter];
+    
+    [border processImage];
+    [imageToProcess processImage];
+    [self showSendPhotoViewController:[blendFilter imageFromCurrentlyProcessedOutput]];
+    
+    return;
+}
 
 - (void)setCameraFilter:(int)no {
     self.filterView.hidden = YES;
@@ -1334,4 +1445,161 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
     return newFilter;
 }
 
+#pragma mark -
+#pragma mark Actions
+
+- (void)saveSnapToRoll {
+    [self.videoCamera capturePhotoAsImageProcessedUpToFilter:self.filter withCompletionHandler:^(UIImage *processedImage, NSError *error) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self sendToTheTarget:processedImage];
+        });
+    }];
+}
+
+- (void)timerCountDown:(NSNumber *)number
+{
+    int i = number.intValue;
+    
+    if (i == -1) {
+        self.timerButton.hidden = YES;
+        return;
+    }
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self.timerButton setTitle:[[NSString alloc] initWithFormat:NSLocalizedString(@"%d sec", nil), i] forState:UIControlStateNormal];
+        [self.timerButton setNeedsDisplay];
+        self.timerButton.hidden = NO;
+        
+        if (i == 0) {
+            [self saveSnapToRoll];
+            [self performSelector:@selector(timerCountDown:) withObject:[NSNumber numberWithInt:i - 1] afterDelay:0.25];
+        } else {
+            [self performSelector:@selector(timerCountDown:) withObject:[NSNumber numberWithInt:i - 1] afterDelay:1.0];
+        }
+    });
+}
+
+- (IBAction)takeSnap:(id)sender {
+    if (self.originalImage != nil) {
+        [self sendToTheTarget:self.stillFilterView.image];
+    } else if (self.timerMode == 0) {
+        [self saveSnapToRoll];
+    } else {
+        [self timerCountDown:[NSNumber numberWithInt:self.timerMode]];
+    }
+}
+
+- (IBAction)changeFilter:(id)sender {
+    [self hideMenus];
+    
+    self.curMenuKind = 0;
+    
+    [self scrollMenuShow:NO forScroll:self.frameScrollView];
+    CGRect rect = self.filterScrollView.frame;
+    [self scrollMenuShow:(rect.origin.y == kMenuHideY) forScroll:self.filterScrollView];
+}
+
+- (IBAction)changeFrame:(id)sender {
+    [self hideMenus];
+    
+    self.curMenuKind = 1;
+    
+    [self scrollMenuShow:NO forScroll:self.filterScrollView];
+    CGRect rect = self.frameScrollView.frame;
+    [self scrollMenuShow:(rect.origin.y == kMenuHideY) forScroll:self.frameScrollView];
+}
+
+- (void)setFlashMenuStatus {
+    if (self.cameraPosition == AVCaptureDevicePositionFront) {
+        self.flashButton.enabled = NO;
+    } else {
+        self.flashButton.enabled = [self hasFlash];
+    }
+}
+
+- (IBAction)flipCamera:(id)sender {
+    self.flashView.hidden = YES;
+    self.timerView.hidden = YES;
+    
+    [self.videoCamera rotateCamera];
+    if (self.cameraPosition == AVCaptureDevicePositionBack)
+        self.cameraPosition = AVCaptureDevicePositionFront;
+    else
+        self.cameraPosition = AVCaptureDevicePositionBack;
+    
+    [self setFlashMenuStatus];
+}
+
+- (IBAction)changeFlashMode:(id)sender {
+    self.timerView.hidden = YES;
+    self.flashView.hidden = !self.flashView.hidden;
+}
+
+- (IBAction)flashNoFlash:(id)sender {
+    self.flashMode = AVCaptureFlashModeOff;
+    [self setFlash:self.flashMode];
+    self.flashButton.image = self.imageNoFlash;
+    self.flashView.hidden = YES;
+}
+
+- (IBAction)flashForceFlash:(id)sender {
+    self.flashMode = AVCaptureFlashModeOn;
+    [self setFlash:self.flashMode];
+    self.flashButton.image = self.imageFlash;
+    self.flashView.hidden = YES;
+}
+
+- (IBAction)flashAutoFlash:(id)sender {
+    self.flashMode = AVCaptureFlashModeAuto;
+    [self setFlash:self.flashMode];
+    self.flashButton.image = self.imageAutoFlash;
+    self.flashView.hidden = YES;
+}
+
+- (IBAction)selectFromRoll:(id)sender {
+    if (self.originalImage != nil) {
+        self.filmRollButton.image = [UIImage imageNamed:@"filmroll.png"];
+        self.flipCameraButton.enabled = self.savedFlipMode;
+        self.flashButton.enabled = self.savedFlashMode;
+        self.timerBarButton.enabled = YES;
+        
+        self.originalImage = nil;
+        self.stillFilterView.image = nil;
+        [self setCameraFilter:self.filterNo];
+        [self.videoCamera resumeCameraCapture];
+        return;
+    }
+    
+    UIImagePickerController *imagePickerController = [[UIImagePickerController alloc] init];
+    
+    [imagePickerController setSourceType:UIImagePickerControllerSourceTypePhotoLibrary];
+    [imagePickerController setAllowsEditing:YES];
+    [self presentViewController:imagePickerController animated:YES completion:^{
+        
+    }];
+}
+
+- (IBAction)changeTimerMode:(id)sender {
+    self.flashView.hidden = YES;
+    self.timerView.hidden = !self.timerView.hidden;
+}
+
+- (IBAction)changeVignette:(id)sender {
+    self.vignetteMode = !self.vignetteMode;
+    [self setCameraFilter:self.filterNo];
+}
+
+- (IBAction)applyTimerMode:(id)sender {
+    self.timerView.hidden = YES;
+    self.timerMode = ((UIView *)sender).tag;
+    [self setTimerImage];
+}
+
+- (IBAction)cancelTimer:(id)sender {
+    [self.timerButton setTitle:NSLocalizedString(@"Canceled", nil) forState:UIControlStateNormal];
+    [self.timerButton setNeedsDisplay];
+    
+    [NSObject cancelPreviousPerformRequestsWithTarget:self];
+    self.timerButton.hidden = YES;
+}
 @end

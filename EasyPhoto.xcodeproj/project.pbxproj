@@ -10,6 +10,8 @@
 		82794B59181A5557007B4556 /* libGPUImage.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 82DA50D0181A1D6000D0EF9A /* libGPUImage.a */; };
 		82794B5B181A5566007B4556 /* AssetsLibrary.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 82794B5A181A5566007B4556 /* AssetsLibrary.framework */; };
 		82794B5D181A5E0F007B4556 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 82794B5C181A5E0F007B4556 /* AVFoundation.framework */; };
+		82794B6A181B3F54007B4556 /* SendPhotoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 82794B68181B3F54007B4556 /* SendPhotoViewController.m */; };
+		82794B6B181B3F54007B4556 /* SendPhotoViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 82794B69181B3F54007B4556 /* SendPhotoViewController.xib */; };
 		82A296F9181A043F00E5CCFE /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 82A296F8181A043F00E5CCFE /* Foundation.framework */; };
 		82A296FB181A043F00E5CCFE /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 82A296FA181A043F00E5CCFE /* CoreGraphics.framework */; };
 		82A296FD181A043F00E5CCFE /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 82A296FC181A043F00E5CCFE /* UIKit.framework */; };
@@ -177,6 +179,9 @@
 /* Begin PBXFileReference section */
 		82794B5A181A5566007B4556 /* AssetsLibrary.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AssetsLibrary.framework; path = System/Library/Frameworks/AssetsLibrary.framework; sourceTree = SDKROOT; };
 		82794B5C181A5E0F007B4556 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
+		82794B67181B3F54007B4556 /* SendPhotoViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SendPhotoViewController.h; sourceTree = "<group>"; };
+		82794B68181B3F54007B4556 /* SendPhotoViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SendPhotoViewController.m; sourceTree = "<group>"; };
+		82794B69181B3F54007B4556 /* SendPhotoViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = SendPhotoViewController.xib; sourceTree = "<group>"; };
 		82A296F5181A043F00E5CCFE /* EasyPhoto.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = EasyPhoto.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		82A296F8181A043F00E5CCFE /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		82A296FA181A043F00E5CCFE /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -394,6 +399,9 @@
 				82A2970A181A043F00E5CCFE /* Main.storyboard */,
 				82A2970D181A043F00E5CCFE /* EasyPhotoViewController.h */,
 				82A2970E181A043F00E5CCFE /* EasyPhotoViewController.m */,
+				82794B67181B3F54007B4556 /* SendPhotoViewController.h */,
+				82794B68181B3F54007B4556 /* SendPhotoViewController.m */,
+				82794B69181B3F54007B4556 /* SendPhotoViewController.xib */,
 				82A29710181A043F00E5CCFE /* Images.xcassets */,
 				82A296FF181A043F00E5CCFE /* Supporting Files */,
 			);
@@ -794,6 +802,7 @@
 				82FFF780181A252B00543F9E /* frame03.png in Resources */,
 				82FFF751181A252B00543F9E /* oldpaper4.png in Resources */,
 				82FFF7B3181A252B00543F9E /* filmroll.png in Resources */,
+				82794B6B181B3F54007B4556 /* SendPhotoViewController.xib in Resources */,
 				82FFF7AD181A252B00543F9E /* camera-button.png in Resources */,
 				82FFF7A6181A252B00543F9E /* frame15thumb.png in Resources */,
 				82FFF762181A252B00543F9E /* filter_s_amaro.png in Resources */,
@@ -847,6 +856,7 @@
 				82A29705181A043F00E5CCFE /* main.m in Sources */,
 				82A2970F181A043F00E5CCFE /* EasyPhotoViewController.m in Sources */,
 				82A29709181A043F00E5CCFE /* EasyPhotoAppDelegate.m in Sources */,
+				82794B6A181B3F54007B4556 /* SendPhotoViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

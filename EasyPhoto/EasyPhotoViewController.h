@@ -28,4 +28,23 @@
 @property (weak, nonatomic) IBOutlet UIButton *timerButton;
 
 
+
+- (IBAction)takeSnap:(id)sender;
+- (IBAction)changeFilter:(id)sender;
+- (IBAction)changeFrame:(id)sender;
+- (IBAction)flipCamera:(id)sender;
+- (IBAction)changeFlashMode:(id)sender;
+- (IBAction)flashNoFlash:(id)sender;
+- (IBAction)flashForceFlash:(id)sender;
+- (IBAction)flashAutoFlash:(id)sender;
+- (IBAction)selectFromRoll:(id)sender;
+- (IBAction)changeTimerMode:(id)sender;
+- (IBAction)changeVignette:(id)sender;
+- (IBAction)applyTimerMode:(id)sender;
+- (IBAction)cancelTimer:(id)sender;
+
+
+
+
+
 @end

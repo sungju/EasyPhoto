@@ -45,6 +45,9 @@
                                         <state key="highlighted">
                                             <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                         </state>
+                                        <connections>
+                                            <action selector="cancelTimer:" destination="vXZ-lx-hvc" eventType="touchUpInside" id="PwH-Pm-YBl"/>
+                                        </connections>
                                     </button>
                                 </subviews>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
@@ -54,19 +57,37 @@
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                                 <color key="backgroundColor" cocoaTouchSystemColor="darkTextColor"/>
                                 <items>
-                                    <barButtonItem image="exchange32.png" style="plain" id="PoF-dV-Yg9"/>
+                                    <barButtonItem image="exchange32.png" style="plain" id="PoF-dV-Yg9">
+                                        <connections>
+                                            <action selector="flipCamera:" destination="vXZ-lx-hvc" id="WXS-O4-hyV"/>
+                                        </connections>
+                                    </barButtonItem>
                                     <barButtonItem width="18" style="plain" systemItem="fixedSpace" id="k4U-or-7TP"/>
-                                    <barButtonItem image="t_noflash.png" style="plain" id="eNF-oa-Ljb"/>
+                                    <barButtonItem image="t_noflash.png" style="plain" id="eNF-oa-Ljb">
+                                        <connections>
+                                            <action selector="changeFlashMode:" destination="vXZ-lx-hvc" id="YDr-ag-UHn"/>
+                                        </connections>
+                                    </barButtonItem>
                                     <barButtonItem style="plain" systemItem="flexibleSpace" id="JAn-eY-U5K"/>
                                     <barButtonItem image="filmroll.png" style="plain" id="GZv-7e-I5v">
                                         <inset key="imageInsets" minX="0.0" minY="0.0" maxX="0.0" maxY="-1"/>
+                                        <connections>
+                                            <action selector="selectFromRoll:" destination="vXZ-lx-hvc" id="Hwn-KG-VMc"/>
+                                        </connections>
                                     </barButtonItem>
                                     <barButtonItem style="plain" systemItem="flexibleSpace" id="HHY-bs-bJJ"/>
                                     <barButtonItem image="timerno.png" style="plain" id="FGx-kV-fqg">
                                         <inset key="imageInsets" minX="2" minY="4" maxX="2" maxY="1"/>
+                                        <connections>
+                                            <action selector="changeTimerMode:" destination="vXZ-lx-hvc" id="DQ3-bk-3k6"/>
+                                        </connections>
                                     </barButtonItem>
                                     <barButtonItem style="plain" systemItem="flexibleSpace" id="Yj7-V8-I5P"/>
-                                    <barButtonItem image="Chip.png" style="plain" id="P6K-ev-s2a"/>
+                                    <barButtonItem image="Chip.png" style="plain" id="P6K-ev-s2a">
+                                        <connections>
+                                            <action selector="changeVignette:" destination="vXZ-lx-hvc" id="01o-Tp-V6v"/>
+                                        </connections>
+                                    </barButtonItem>
                                 </items>
                                 <color key="tintColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
                             </toolbar>
@@ -85,6 +106,9 @@
                                         <state key="highlighted">
                                             <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                         </state>
+                                        <connections>
+                                            <action selector="flashNoFlash:" destination="vXZ-lx-hvc" eventType="touchUpInside" id="Rqx-Eb-5cl"/>
+                                        </connections>
                                     </button>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="NDu-xH-4GK">
                                         <rect key="frame" x="0.0" y="39" width="42" height="37"/>
@@ -97,6 +121,9 @@
                                         <state key="highlighted">
                                             <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                         </state>
+                                        <connections>
+                                            <action selector="flashForceFlash:" destination="vXZ-lx-hvc" eventType="touchUpInside" id="ad6-Od-hZb"/>
+                                        </connections>
                                     </button>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="XgJ-su-1mM">
                                         <rect key="frame" x="0.0" y="78" width="42" height="37"/>
@@ -109,6 +136,9 @@
                                         <state key="highlighted">
                                             <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                         </state>
+                                        <connections>
+                                            <action selector="flashAutoFlash:" destination="vXZ-lx-hvc" eventType="touchUpInside" id="AQw-Sd-qz9"/>
+                                        </connections>
                                     </button>
                                 </subviews>
                                 <color key="backgroundColor" red="0.71847520369999995" green="0.82228754900000001" blue="1" alpha="1" colorSpace="calibratedRGB"/>
@@ -164,6 +194,9 @@
                                         <state key="highlighted">
                                             <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                         </state>
+                                        <connections>
+                                            <action selector="applyTimerMode:" destination="vXZ-lx-hvc" eventType="touchUpInside" id="A9D-SC-k28"/>
+                                        </connections>
                                     </button>
                                 </subviews>
                                 <color key="backgroundColor" red="0.71847520369999995" green="0.82228754900000001" blue="1" alpha="1" colorSpace="calibratedRGB"/>
@@ -184,6 +217,9 @@
                                 <state key="highlighted" image="camera-button-depressed.png">
                                     <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 </state>
+                                <connections>
+                                    <action selector="takeSnap:" destination="vXZ-lx-hvc" eventType="touchUpInside" id="CX0-zS-R22"/>
+                                </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="Wdz-rp-Ytm">
                                 <rect key="frame" x="249" y="516" width="51" height="51"/>
@@ -198,6 +234,9 @@
                                 <state key="highlighted" image="Postage Stamp Highlight.png" backgroundImage="Postage Stamp.png">
                                     <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 </state>
+                                <connections>
+                                    <action selector="changeFrame:" destination="vXZ-lx-hvc" eventType="touchUpInside" id="Qn2-zU-Vqe"/>
+                                </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="LEg-E0-uQu">
                                 <rect key="frame" x="20" y="516" width="51" height="51"/>
@@ -212,6 +251,9 @@
                                 <state key="highlighted" image="Dashboard Highlight.png" backgroundImage="Dashboard.png">
                                     <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 </state>
+                                <connections>
+                                    <action selector="changeFilter:" destination="vXZ-lx-hvc" eventType="touchUpInside" id="ARN-6e-ucB"/>
+                                </connections>
                             </button>
                             <imageView userInteractionEnabled="NO" alpha="0.40000000596046448" contentMode="scaleToFill" image="focus.gif" id="Wo1-fo-f5T">
                                 <rect key="frame" x="212" y="331" width="50" height="50"/>
@@ -242,6 +284,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="x5A-6p-PRh" sceneMemberID="firstResponder"/>
             </objects>
+            <point key="canvasLocation" x="102" y="61"/>
         </scene>
     </scenes>
     <resources>
