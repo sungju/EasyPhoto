@@ -49,6 +49,9 @@
 @property (nonatomic) UIImage *imageTimer5;
 @property (nonatomic) UIImage *imageTimer10;
 
+@property (nonatomic) int kMenuShowY;
+@property (nonatomic) int kMenuHideY;
+
 @end
 
 static inline double radians (double degrees) {return degrees * M_PI/180;}
@@ -74,8 +77,6 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
     }
 }
 
-#define kMenuShowY  350
-#define kMenuHideY  420
 #define kMenuX      0
 #define kMenuHeight 60
 #define kMenuWidth  320
@@ -91,6 +92,13 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
         self.scale = [[UIScreen mainScreen] scale];
     } else {
         self.scale = 1.0f;
+    }
+    self.kMenuShowY = 350;
+    self.kMenuHideY = 420;
+    CGPoint toolBarPoint = self.toolBar.frame.origin;
+    if (toolBarPoint.y > 0) {
+        self.kMenuHideY = toolBarPoint.y;
+        self.kMenuShowY = toolBarPoint.y - kMenuHeight;
     }
     
     self.filterNo = 0;
@@ -110,7 +118,7 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
     [self.frameView addGestureRecognizer:singleTap];
     [self.filterView addGestureRecognizer:singleTap];
     
-    self.filterScrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(kMenuX, kMenuHideY, kMenuWidth, kMenuHeight)];
+    self.filterScrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(kMenuX, self.kMenuHideY, kMenuWidth, kMenuHeight)];
     [self.view insertSubview:self.filterScrollView belowSubview:self.toolBar];
     
     self.filterImageArray = [[NSArray alloc] initWithObjects:
@@ -163,7 +171,7 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
     
     [self setMenuItem:self.filterScrollView withImages:self.filterImageArray withSelectedImages:self.filterSelectedImageArray run:@selector(filterSelected:)];
     
-    self.frameScrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(kMenuX, kMenuHideY, kMenuWidth, kMenuHeight)];
+    self.frameScrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(kMenuX, self.kMenuHideY, kMenuWidth, kMenuHeight)];
     [self.view insertSubview:self.frameScrollView belowSubview:self.toolBar];
     
     self.frameImageArray = [[NSArray alloc] initWithObjects:
@@ -472,10 +480,10 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
     
     CGRect rect = scrollView.frame;
     if (show) {
-        rect.origin.y = kMenuShowY;
+        rect.origin.y = self.kMenuShowY;
         [UIView setAnimationCurve:UIViewAnimationCurveEaseOut];
     } else {
-        rect.origin.y = kMenuHideY;
+        rect.origin.y = self.kMenuHideY;
         [UIView setAnimationCurve:UIViewAnimationCurveEaseIn];
     }
     scrollView.frame = rect;
@@ -1496,7 +1504,7 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
     
     [self scrollMenuShow:NO forScroll:self.frameScrollView];
     CGRect rect = self.filterScrollView.frame;
-    [self scrollMenuShow:(rect.origin.y == kMenuHideY) forScroll:self.filterScrollView];
+    [self scrollMenuShow:(rect.origin.y == self.kMenuHideY) forScroll:self.filterScrollView];
 }
 
 - (IBAction)changeFrame:(id)sender {
@@ -1506,7 +1514,7 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
     
     [self scrollMenuShow:NO forScroll:self.filterScrollView];
     CGRect rect = self.frameScrollView.frame;
-    [self scrollMenuShow:(rect.origin.y == kMenuHideY) forScroll:self.frameScrollView];
+    [self scrollMenuShow:(rect.origin.y == self.kMenuHideY) forScroll:self.frameScrollView];
 }
 
 - (void)setFlashMenuStatus {

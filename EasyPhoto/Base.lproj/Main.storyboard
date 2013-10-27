@@ -22,12 +22,12 @@
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                             </view>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" id="Rc4-5e-537">
-                                <rect key="frame" x="0.0" y="140.00000228484464" width="320" height="336"/>
-                                <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES" heightSizable="YES"/>
+                                <rect key="frame" x="0.0" y="140" width="320" height="320"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                             </imageView>
                             <imageView userInteractionEnabled="NO" contentMode="scaleToFill" id="gXL-qn-HPL">
-                                <rect key="frame" x="-1" y="140.00000228484464" width="320" height="336"/>
-                                <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES" heightSizable="YES"/>
+                                <rect key="frame" x="0.0" y="140" width="320" height="320"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                             </imageView>
                             <view opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" id="XA0-Le-8n7">
                                 <rect key="frame" x="0.0" y="244" width="320" height="80"/>
@@ -278,7 +278,7 @@
                         <outlet property="timerBarButton" destination="FGx-kV-fqg" id="OFB-dC-OwR"/>
                         <outlet property="timerButton" destination="MaV-Vc-vBF" id="bOi-9j-iHE"/>
                         <outlet property="timerView" destination="9Hu-nz-QOm" id="AP4-v8-hNa"/>
-                        <outlet property="toolBar" destination="lds-B0-K2L" id="cwA-Pu-zsw"/>
+                        <outlet property="toolBar" destination="lds-B0-K2L" id="zn1-n8-0E4"/>
                         <outlet property="vignetteButton" destination="P6K-ev-s2a" id="75b-Yr-s08"/>
                     </connections>
                 </viewController>
