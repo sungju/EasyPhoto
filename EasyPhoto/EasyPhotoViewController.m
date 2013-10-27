@@ -232,7 +232,7 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
     self.flashButton.enabled = [self hasFlash];
     
     [self.flashView viewWithTag:0].layer.cornerRadius = 8;
-    [self.flashView viewWithTag:0].layer.cornerRadius = 8;
+    [self.timerView viewWithTag:0].layer.cornerRadius = 8;
     
     self.imageNoFlash = [UIImage imageNamed:@"t_noflash.png"];
     self.imageAutoFlash = [UIImage imageNamed:@"t_autoflash.png"];
