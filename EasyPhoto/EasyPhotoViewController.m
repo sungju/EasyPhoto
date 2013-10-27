@@ -52,6 +52,9 @@
 @property (nonatomic) int kMenuShowY;
 @property (nonatomic) int kMenuHideY;
 
+@property (nonatomic) float cropStartY;
+@property (nonatomic) float cropEndY;
+
 @end
 
 static inline double radians (double degrees) {return degrees * M_PI/180;}
@@ -95,12 +98,9 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
     }
     self.kMenuShowY = 350;
     self.kMenuHideY = 420;
-    CGPoint toolBarPoint = self.toolBar.frame.origin;
-    if (toolBarPoint.y > 0) {
-        self.kMenuHideY = toolBarPoint.y;
-        self.kMenuShowY = toolBarPoint.y - kMenuHeight;
-    }
-    
+    self.cropStartY = 0.24f;
+    self.cropEndY = 0.84f;
+
     self.filterNo = 0;
     self.frameNo = 0;
     self.vignetteMode = FALSE;
@@ -247,7 +247,32 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
 
 - (void)viewDidAppear:(BOOL)animated
 {
+    int y;
+    
+    CGPoint toolBarPoint = self.toolBar.frame.origin;
+    if (toolBarPoint.y > 0) {
+        self.kMenuHideY = toolBarPoint.y;
+        self.kMenuShowY = toolBarPoint.y - kMenuHeight;
+        
+        CGRect frame = self.filterScrollView.frame;
+        CGRect newFrame = CGRectMake(0, self.kMenuHideY, frame.size.width, frame.size.height);
+        self.filterScrollView.frame = newFrame;
+        self.frameScrollView.frame = newFrame;
+    }
+    
+    //y = (self.view.frame.size.height / 2) - (self.view.frame.size.width / 2);
+    y = self.toolBar.frame.origin.y - self.view.frame.size.width;
+    
+    CGRect viewRect = CGRectMake(0, y, self.view.frame.size.width, self.view.frame.size.width);
+    self.filterView.frame = viewRect;
+    self.frameView.frame = viewRect;
+    self.stillFilterView.frame = viewRect;
+    self.previewRect = viewRect;
+    
     [self loadConfig];
+    
+    self.cropStartY =  self.frameView.frame.origin.y / self.view.frame.size.height;
+    self.cropEndY = (self.frameView.frame.origin.y +self.frameView.frame.size.height) / self.view.frame.size.height;
     
     [self selectScrollMenu:self.filterScrollView fromFilter:0 toFilter:self.filterNo + 1];
     [self selectScrollMenu:self.frameScrollView fromFilter:0 toFilter:self.frameNo + 1];
@@ -526,7 +551,7 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
     self.focusImageView.frame = newLocation;
     [self.focusImageView setHidden:NO];
     
-    CGPoint tapPoint = [gestureRecognizer locationInView:self.frameView];
+    CGPoint tapPoint = [gestureRecognizer locationInView:self.view];
     CGPoint convertedFocusPoint = [self convertToPointOfInterestFromViewCoordinates:tapPoint];
     [self autoFocusAtPoint:convertedFocusPoint];
     
@@ -658,7 +683,7 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
     
     newFilter = [[GPUImageFilterGroup alloc] init];
     
-    GPUImageCropFilter *cropFilter = [[GPUImageCropFilter alloc] initWithCropRegion:CGRectMake(0.f, 0.28f, 1.f, .84f)];
+    GPUImageCropFilter *cropFilter = [[GPUImageCropFilter alloc] initWithCropRegion:CGRectMake(0.f, self.self.cropStartY, 1.f, self.self.cropEndY)];
     
     GPUImageBrightnessFilter *brightFilter = [[GPUImageBrightnessFilter alloc] init];
     [brightFilter setBrightness:0.0];
@@ -694,7 +719,7 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
     self.sourcePicture = [[GPUImagePicture alloc] initWithImage:[UIImage imageNamed:@"oldpaper1.jpg"] smoothlyScaleOutput:YES];
     [self.sourcePicture processImage];
     
-    GPUImageCropFilter *cropFilter = [[GPUImageCropFilter alloc] initWithCropRegion:CGRectMake(0.f, 0.28f, 1.f, .84f)];
+    GPUImageCropFilter *cropFilter = [[GPUImageCropFilter alloc] initWithCropRegion:CGRectMake(0.f, self.cropStartY, 1.f, self.cropEndY)];
     
     GPUImageGammaFilter *gammaFilter = [[GPUImageGammaFilter alloc] init];
     [gammaFilter setGamma:1.0];
@@ -749,7 +774,7 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
     self.sourcePicture = [[GPUImagePicture alloc] initWithImage:[UIImage imageNamed:@"oldpaper3.jpg"] smoothlyScaleOutput:YES];
     [self.sourcePicture processImage];
     
-    GPUImageCropFilter *cropFilter = [[GPUImageCropFilter alloc] initWithCropRegion:CGRectMake(0.f, 0.28f, 1.f, .84f)];
+    GPUImageCropFilter *cropFilter = [[GPUImageCropFilter alloc] initWithCropRegion:CGRectMake(0.f, self.cropStartY, 1.f, self.cropEndY)];
     
     GPUImageGammaFilter *gammaFilter = [[GPUImageGammaFilter alloc] init];
     [gammaFilter setGamma:1.0];
@@ -804,7 +829,7 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
     self.sourcePicture = [[GPUImagePicture alloc] initWithImage:[UIImage imageNamed:@"oldpaper4.jpg"] smoothlyScaleOutput:YES];
     [self.sourcePicture processImage];
     
-    GPUImageCropFilter *cropFilter = [[GPUImageCropFilter alloc] initWithCropRegion:CGRectMake(0.f, 0.28f, 1.f, .84f)];
+    GPUImageCropFilter *cropFilter = [[GPUImageCropFilter alloc] initWithCropRegion:CGRectMake(0.f, self.cropStartY, 1.f, self.cropEndY)];
     
     GPUImageGammaFilter *gammaFilter = [[GPUImageGammaFilter alloc] init];
     [gammaFilter setGamma:1.0];
@@ -860,7 +885,7 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
     self.sourcePicture = [[GPUImagePicture alloc] initWithImage:[UIImage imageNamed:@"oldpaper2.jpg"] smoothlyScaleOutput:YES];
     [self.sourcePicture processImage];
     
-    GPUImageCropFilter *cropFilter = [[GPUImageCropFilter alloc] initWithCropRegion:CGRectMake(0.f, 0.28f, 1.f, .84f)];
+    GPUImageCropFilter *cropFilter = [[GPUImageCropFilter alloc] initWithCropRegion:CGRectMake(0.f, self.cropStartY, 1.f, self.cropEndY)];
     
     GPUImageBrightnessFilter *brightFilter = [[GPUImageBrightnessFilter alloc] init];
     [brightFilter setBrightness:-0.1];
@@ -915,7 +940,7 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
     self.sourcePicture = [[GPUImagePicture alloc] initWithImage:[UIImage imageNamed:@"amaro.jpg"] smoothlyScaleOutput:YES];
     [self.sourcePicture processImage];
     
-    GPUImageCropFilter *cropFilter = [[GPUImageCropFilter alloc] initWithCropRegion:CGRectMake(0.f, 0.28f, 1.f, .84f)];
+    GPUImageCropFilter *cropFilter = [[GPUImageCropFilter alloc] initWithCropRegion:CGRectMake(0.f, self.cropStartY, 1.f, self.cropEndY)];
     
     GPUImageGammaFilter *gammaFilter = [[GPUImageGammaFilter alloc] init];
     [gammaFilter setGamma:1.0];
@@ -967,7 +992,7 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
     
     newFilter = [[GPUImageFilterGroup alloc] init];
     
-    GPUImageCropFilter *cropFilter = [[GPUImageCropFilter alloc] initWithCropRegion:CGRectMake(0.f, 0.28f, 1.f, .84f)];
+    GPUImageCropFilter *cropFilter = [[GPUImageCropFilter alloc] initWithCropRegion:CGRectMake(0.f, self.cropStartY, 1.f, self.cropEndY)];
     
     GPUImageGammaFilter *gammaFilter = [[GPUImageGammaFilter alloc] init];
     [gammaFilter setGamma:0.5];
@@ -1009,7 +1034,7 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
     self.sourcePicture = [[GPUImagePicture alloc] initWithImage:[UIImage imageNamed:@"nashville.png"] smoothlyScaleOutput:YES];
     [self.sourcePicture processImage];
     
-    GPUImageCropFilter *cropFilter = [[GPUImageCropFilter alloc] initWithCropRegion:CGRectMake(0.f, 0.28f, 1.f, .84f)];
+    GPUImageCropFilter *cropFilter = [[GPUImageCropFilter alloc] initWithCropRegion:CGRectMake(0.f, self.cropStartY, 1.f, self.cropEndY)];
     
     GPUImageBrightnessFilter *brightFilter = [[GPUImageBrightnessFilter alloc] init];
     [brightFilter setBrightness:-0.1];
@@ -1052,7 +1077,7 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
     self.sourcePicture = [[GPUImagePicture alloc] initWithImage:[UIImage imageNamed:@"nashville.png"] smoothlyScaleOutput:YES];
     [self.sourcePicture processImage];
     
-    GPUImageCropFilter *cropFilter = [[GPUImageCropFilter alloc] initWithCropRegion:CGRectMake(0.f, 0.28f, 1.f, .84f)];
+    GPUImageCropFilter *cropFilter = [[GPUImageCropFilter alloc] initWithCropRegion:CGRectMake(0.f, self.cropStartY, 1.f, self.cropEndY)];
     
     GPUImageBrightnessFilter *brightFilter = [[GPUImageBrightnessFilter alloc] init];
     [brightFilter setBrightness:0.05];
@@ -1107,7 +1132,7 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
     self.sourcePicture = [[GPUImagePicture alloc] initWithImage:[UIImage imageNamed:@"nashville.png"] smoothlyScaleOutput:YES];
     [self.sourcePicture processImage];
     
-    GPUImageCropFilter *cropFilter = [[GPUImageCropFilter alloc] initWithCropRegion:CGRectMake(0.f, 0.28f, 1.f, .84f)];
+    GPUImageCropFilter *cropFilter = [[GPUImageCropFilter alloc] initWithCropRegion:CGRectMake(0.f, self.cropStartY, 1.f, self.cropEndY)];
     
     GPUImageBrightnessFilter *brightFilter = [[GPUImageBrightnessFilter alloc] init];
     [brightFilter setBrightness:0.1];
@@ -1159,7 +1184,7 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
     
     newFilter = [[GPUImageFilterGroup alloc] init];
     
-    GPUImageCropFilter *cropFilter = [[GPUImageCropFilter alloc] initWithCropRegion:CGRectMake(0.f, 0.28f, 1.f, .84f)];
+    GPUImageCropFilter *cropFilter = [[GPUImageCropFilter alloc] initWithCropRegion:CGRectMake(0.f, self.cropStartY, 1.f, self.cropEndY)];
     
     GPUImageSepiaFilter *sepiaFilter = [[GPUImageSepiaFilter alloc] init];
     
@@ -1191,7 +1216,7 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
     
     newFilter = [[GPUImageFilterGroup alloc] init];
     
-    GPUImageCropFilter *cropFilter = [[GPUImageCropFilter alloc] initWithCropRegion:CGRectMake(0.f, 0.28f, 1.f, .84f)];
+    GPUImageCropFilter *cropFilter = [[GPUImageCropFilter alloc] initWithCropRegion:CGRectMake(0.f, self.cropStartY, 1.f, self.cropEndY)];
     
     GPUImageGrayscaleFilter *grayFilter = [[GPUImageGrayscaleFilter alloc] init];
     
@@ -1235,7 +1260,7 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
     
     newFilter = [[GPUImageFilterGroup alloc] init];
     
-    GPUImageCropFilter *cropFilter = [[GPUImageCropFilter alloc] initWithCropRegion:CGRectMake(0.f, 0.28f, 1.f, .84f)];
+    GPUImageCropFilter *cropFilter = [[GPUImageCropFilter alloc] initWithCropRegion:CGRectMake(0.f, self.cropStartY, 1.f, self.cropEndY)];
     
     GPUImageGrayscaleFilter *grayFilter = [[GPUImageGrayscaleFilter alloc] init];
     
@@ -1273,7 +1298,7 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
     
     newFilter = [[GPUImageFilterGroup alloc] init];
     
-    GPUImageCropFilter *cropFilter = [[GPUImageCropFilter alloc] initWithCropRegion:CGRectMake(0.f, 0.28f, 1.f, .84f)];
+    GPUImageCropFilter *cropFilter = [[GPUImageCropFilter alloc] initWithCropRegion:CGRectMake(0.f, self.cropStartY, 1.f, self.cropEndY)];
     
     GPUImageSketchFilter *sketchFilter = [[GPUImageSketchFilter alloc] init];
     
@@ -1305,7 +1330,7 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
     
     newFilter = [[GPUImageFilterGroup alloc] init];
     
-    GPUImageCropFilter *cropFilter = [[GPUImageCropFilter alloc] initWithCropRegion:CGRectMake(0.f, 0.28f, 1.f, .84f)];
+    GPUImageCropFilter *cropFilter = [[GPUImageCropFilter alloc] initWithCropRegion:CGRectMake(0.f, self.cropStartY, 1.f, self.cropEndY)];
     
     GPUImageToonFilter *toonFilter = [[GPUImageToonFilter alloc] init];
     
@@ -1337,7 +1362,7 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
     
     newFilter = [[GPUImageFilterGroup alloc] init];
     
-    GPUImageCropFilter *cropFilter = [[GPUImageCropFilter alloc] initWithCropRegion:CGRectMake(0.f, 0.28f, 1.f, .84f)];
+    GPUImageCropFilter *cropFilter = [[GPUImageCropFilter alloc] initWithCropRegion:CGRectMake(0.f, self.cropStartY, 1.f, self.cropEndY)];
     
     GPUImageColorInvertFilter *invertFilter = [[GPUImageColorInvertFilter alloc] init];
     
@@ -1369,7 +1394,7 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
     
     newFilter = [[GPUImageFilterGroup alloc] init];
     
-    GPUImageCropFilter *cropFilter = [[GPUImageCropFilter alloc] initWithCropRegion:CGRectMake(0.f, 0.28f, 1.f, .84f)];
+    GPUImageCropFilter *cropFilter = [[GPUImageCropFilter alloc] initWithCropRegion:CGRectMake(0.f, self.cropStartY, 1.f, self.cropEndY)];
     
     GPUImageEmbossFilter *embossFilter = [[GPUImageEmbossFilter alloc] init];
     [embossFilter setIntensity:2.5];
@@ -1403,7 +1428,7 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
     
     newFilter = [[GPUImageFilterGroup alloc] init];
     
-    GPUImageCropFilter *cropFilter = [[GPUImageCropFilter alloc] initWithCropRegion:CGRectMake(0.f, 0.28f, 1.f, .84f)];
+    GPUImageCropFilter *cropFilter = [[GPUImageCropFilter alloc] initWithCropRegion:CGRectMake(0.f, self.cropStartY, 1.f, self.cropEndY)];
     
     self.sourcePicture = [[GPUImagePicture alloc] initWithImage:[UIImage imageNamed:@"wooden.png"] smoothlyScaleOutput:YES];
     [self.sourcePicture processImage];
