@@ -274,6 +274,12 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
     self.cropStartY =  self.frameView.frame.origin.y / self.view.frame.size.height;
     self.cropEndY = (self.frameView.frame.origin.y +self.frameView.frame.size.height) / self.view.frame.size.height;
     
+    float imageWidth = 1080;
+    float imageHeight = 1920;
+    float startY = (imageHeight - imageWidth) / 2;
+    self.cropStartY = startY / imageHeight;
+    self.cropEndY = imageWidth / imageHeight;
+    
     [self selectScrollMenu:self.filterScrollView fromFilter:0 toFilter:self.filterNo + 1];
     [self selectScrollMenu:self.frameScrollView fromFilter:0 toFilter:self.frameNo + 1];
     
@@ -336,7 +342,7 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
 #pragma mark Camera Setup
 - (void)setupCamera {
     self.videoCamera = [[GPUImageStillCamera alloc]
-                        initWithSessionPreset:AVCaptureSessionPresetHigh cameraPosition:self.cameraPosition];
+                        initWithSessionPreset:AVCaptureSessionPreset1920x1080 cameraPosition:self.cameraPosition];
     
     self.videoCamera.outputImageOrientation = UIInterfaceOrientationPortrait;
     
@@ -597,6 +603,8 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
     
     if (self.filter != nil) {
         if (self.originalImage == nil) {
+            [self.videoCamera stopCameraCapture];
+
             [self.videoCamera removeTarget:self.filter];
         }
     }
@@ -667,6 +675,7 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
         [self.videoCamera addTarget:self.filter];
         
         [self.filter addTarget:self.filterView];
+        [self.videoCamera startCameraCapture];
     } else {
         self.stillFilterView.image = [self.filter imageByFilteringImage:self.originalImage];
     }
@@ -683,7 +692,7 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
     
     newFilter = [[GPUImageFilterGroup alloc] init];
     
-    GPUImageCropFilter *cropFilter = [[GPUImageCropFilter alloc] initWithCropRegion:CGRectMake(0.f, self.self.cropStartY, 1.f, self.self.cropEndY)];
+    GPUImageCropFilter *cropFilter = [[GPUImageCropFilter alloc] initWithCropRegion:CGRectMake(0.f, self.cropStartY, 1.f, self.cropEndY)];
     
     GPUImageBrightnessFilter *brightFilter = [[GPUImageBrightnessFilter alloc] init];
     [brightFilter setBrightness:0.0];
