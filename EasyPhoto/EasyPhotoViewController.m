@@ -60,6 +60,25 @@
 static inline double radians (double degrees) {return degrees * M_PI/180;}
 
 @implementation EasyPhotoViewController
+@synthesize cameraPosition = _cameraPosition;
+
+- (void)setCameraPosition:(int)cameraPosition
+{
+    _cameraPosition = cameraPosition;
+    
+    float imageWidth, imageHeight;
+    
+    if (cameraPosition == AVCaptureDevicePositionBack) {
+        imageWidth = 1080;
+        imageHeight = 1920;
+    } else {
+        imageWidth = 480;
+        imageHeight = 640;
+    }
+    float startY = (imageHeight - imageWidth) / 2;
+    self.cropStartY = startY / imageHeight;
+    self.cropEndY = imageWidth / imageHeight;
+}
 
 - (UIImage *)loadFrame:(int)no {
     NSString *frameName = [NSString stringWithFormat:@"frame%02d", no];
@@ -72,7 +91,7 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
 }
 
 - (void)loadAllFrameImages {
-    int count = [self.frameImageArray count];
+    int count = (int)self.frameImageArray.count;
     self.frameUIImageArray = [[NSMutableArray alloc] initWithCapacity:count];
     
     for (int i = 0; i <= count; i++) {
@@ -271,15 +290,6 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
     
     [self loadConfig];
     
-    self.cropStartY =  self.frameView.frame.origin.y / self.view.frame.size.height;
-    self.cropEndY = (self.frameView.frame.origin.y +self.frameView.frame.size.height) / self.view.frame.size.height;
-    
-    float imageWidth = 1080;
-    float imageHeight = 1920;
-    float startY = (imageHeight - imageWidth) / 2;
-    self.cropStartY = startY / imageHeight;
-    self.cropEndY = imageWidth / imageHeight;
-    
     [self selectScrollMenu:self.filterScrollView fromFilter:0 toFilter:self.filterNo + 1];
     [self selectScrollMenu:self.frameScrollView fromFilter:0 toFilter:self.frameNo + 1];
     
@@ -294,6 +304,14 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
     } else {
         self.filmRollButton.image = [UIImage imageNamed:@"camera.png"];
     }
+}
+
+- (void)viewWillDisappear:(BOOL)animated
+{
+    [self saveConfig];
+    
+    if (self.videoCamera != nil)
+        [self.videoCamera pauseCameraCapture];
 }
 
 - (void)didReceiveMemoryWarning
@@ -338,11 +356,24 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
     [self setTimerImage];
 }
 
+- (void)saveConfig
+{
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    [defaults setObject:[NSNumber numberWithInt:self.filterNo] forKey:@"filterNo"];
+    [defaults setObject:[NSNumber numberWithInt:self.frameNo] forKey:@"frameNo"];
+    [defaults setObject:[NSNumber numberWithBool:self.vignetteMode] forKey:@"vignetteMode"];
+    [defaults setObject:[NSNumber numberWithInt:self.curMenuKind] forKey:@"curMenuKind"];
+    [defaults setObject:[NSNumber numberWithInt:self.cameraPosition] forKey:@"cameraPosition"];
+    [defaults setObject:[NSNumber numberWithInt:self.timerMode] forKey:@"timerMode"];
+    
+    [defaults synchronize];
+}
+
 #pragma mark -
 #pragma mark Camera Setup
 - (void)setupCamera {
     self.videoCamera = [[GPUImageStillCamera alloc]
-                        initWithSessionPreset:AVCaptureSessionPreset1920x1080 cameraPosition:self.cameraPosition];
+                        initWithSessionPreset:AVCaptureSessionPresetHigh cameraPosition:self.cameraPosition];
     
     self.videoCamera.outputImageOrientation = UIInterfaceOrientationPortrait;
     
@@ -486,7 +517,7 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
         [scrollView addSubview:button];
     }
     
-    [self layoutScrollDetailViews:scrollView withCount:[imageArray count]];
+    [self layoutScrollDetailViews:scrollView withCount:(int)[imageArray count]];
 }
 
 #pragma mark -
@@ -1493,6 +1524,10 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
 - (void)saveSnapToRoll {
     [self.videoCamera capturePhotoAsImageProcessedUpToFilter:self.filter withCompletionHandler:^(UIImage *processedImage, NSError *error) {
         dispatch_async(dispatch_get_main_queue(), ^{
+#ifdef DEBUG
+            NSLog(@"startY = %f, endY = %f", self.cropStartY, self.cropEndY);
+            NSLog(@"width = %f, height = %f", processedImage.size.width, processedImage.size.height);
+#endif
             [self sendToTheTarget:processedImage];
         });
     }];
