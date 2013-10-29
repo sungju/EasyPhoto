@@ -262,9 +262,11 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
     self.imageTimer2 = [UIImage imageNamed:@"timer2.png"];
     self.imageTimer5 = [UIImage imageNamed:@"timer5.png"];
     self.imageTimer10 = [UIImage imageNamed:@"timer10.png"];
+    
+    [self setViewPosition];
 }
 
-- (void)viewDidAppear:(BOOL)animated
+- (void)setViewPosition
 {
     int y;
     
@@ -279,15 +281,18 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
         self.frameScrollView.frame = newFrame;
     }
     
-    //y = (self.view.frame.size.height / 2) - (self.view.frame.size.width / 2);
-    y = self.toolBar.frame.origin.y - self.view.frame.size.width;
+    y = (self.view.frame.size.height / 2) - (self.view.frame.size.width / 2);
     
     CGRect viewRect = CGRectMake(0, y, self.view.frame.size.width, self.view.frame.size.width);
     self.filterView.frame = viewRect;
     self.frameView.frame = viewRect;
     self.stillFilterView.frame = viewRect;
     self.previewRect = viewRect;
-    
+}
+
+- (void)viewDidAppear:(BOOL)animated
+{
+    [self setViewPosition];
     [self loadConfig];
     
     [self selectScrollMenu:self.filterScrollView fromFilter:0 toFilter:self.filterNo + 1];

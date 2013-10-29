@@ -30,7 +30,7 @@
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                             </imageView>
                             <toolbar opaque="NO" clearsContextBeforeDrawing="NO" alpha="0.60000002384185791" contentMode="scaleToFill" id="hR3-kZ-2ci">
-                                <rect key="frame" x="0.0" y="46" width="320" height="44"/>
+                                <rect key="frame" x="0.0" y="25" width="320" height="44"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                                 <color key="backgroundColor" cocoaTouchSystemColor="darkTextColor"/>
                                 <items>
@@ -69,7 +69,7 @@
                                 <color key="tintColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
                             </toolbar>
                             <view contentMode="scaleToFill" id="Gq8-e0-4Rc">
-                                <rect key="frame" x="71" y="90" width="42" height="118"/>
+                                <rect key="frame" x="71" y="69" width="42" height="118"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <subviews>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="Unx-mU-jjH">
@@ -121,7 +121,7 @@
                                 <color key="backgroundColor" red="0.71847520369999995" green="0.82228754900000001" blue="1" alpha="1" colorSpace="calibratedRGB"/>
                             </view>
                             <view contentMode="scaleToFill" id="9Hu-nz-QOm">
-                                <rect key="frame" x="202" y="90" width="42" height="159"/>
+                                <rect key="frame" x="202" y="69" width="42" height="159"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <subviews>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="KKY-gF-VKE">
@@ -245,10 +245,6 @@
                                 <rect key="frame" x="212" y="331" width="50" height="50"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             </imageView>
-                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" image="banner_ample.png" id="DFI-Mq-GV8">
-                                <rect key="frame" x="0.0" y="0.0" width="320" height="46"/>
-                                <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
-                            </imageView>
                             <button autoresizesSubviews="NO" opaque="NO" contentMode="center" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="MaV-Vc-vBF">
                                 <rect key="frame" x="0.0" y="239" width="320" height="90"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
@@ -296,7 +292,6 @@
         <image name="Postage Stamp Highlight.png" width="40" height="40"/>
         <image name="Postage Stamp.png" width="40" height="40"/>
         <image name="background.jpg" width="640" height="960"/>
-        <image name="banner_ample.png" width="320" height="80"/>
         <image name="camera-button-depressed.png" width="98" height="40"/>
         <image name="camera-button.png" width="98" height="40"/>
         <image name="exchange32.png" width="32" height="32"/>
