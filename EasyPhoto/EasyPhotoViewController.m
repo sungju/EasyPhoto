@@ -301,6 +301,9 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
     if (self.videoCamera != nil && self.originalImage == nil) {
         [self setCameraFrame:self.frameNo];
         [self setCameraFilter:self.filterNo];
+#ifdef DEBUG
+        NSLog(@"Camera position: %d", self.videoCamera.cameraPosition);
+#endif
         if (self.cameraPosition != self.videoCamera.cameraPosition)
             [self.videoCamera rotateCamera];
         [self.videoCamera resumeCameraCapture];
@@ -619,9 +622,36 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
 
 - (void)sendToTheTarget:(UIImage *)stillImage
 {
-    GPUImageAlphaBlendFilter *blendFilter = [[GPUImageAlphaBlendFilter alloc] init];
     GPUImagePicture *imageToProcess = [[GPUImagePicture alloc] initWithImage:stillImage];
+    GPUImageAlphaBlendFilter *blendFilter = [[GPUImageAlphaBlendFilter alloc] init];
+    
     GPUImagePicture *border = [[GPUImagePicture alloc] initWithImage:self.frameView.image];
+    
+    if (stillImage.size.height != stillImage.size.width) {
+        float imageHeight = stillImage.size.height;
+        float imageWidth = stillImage.size.width;
+        float startY, startX, cropStartY, cropEndY, cropStartX, cropEndX;
+        
+        if (imageHeight > imageWidth) {
+            startY = (imageHeight - imageWidth) / 2;
+            cropStartY = startY / imageHeight;
+            cropEndY = imageWidth / imageHeight;
+            cropStartX = 0.0f;
+            cropEndX = 1.0f;
+        } else {
+            startX = (imageWidth - imageHeight) / 2;
+            cropStartX = startX / imageWidth;
+            cropEndX = imageHeight / imageWidth;
+            cropStartY = 0.0f;
+            cropEndY = 1.0f;
+        }
+#ifdef DEBUG
+        NSLog(@"imageHeight = %f, imageWidth = %f, cropStartX = %f, cropStartY = %f, cropEndX = %f, cropEndY = %f", imageHeight, imageWidth, cropStartX, cropStartY, cropEndX, cropEndY);
+#endif
+        GPUImageCropFilter *cropFilter = [[GPUImageCropFilter alloc] initWithCropRegion:CGRectMake(cropStartX, cropStartY, cropEndX, cropEndY)];
+        [imageToProcess addTarget:cropFilter];
+        [cropFilter addTarget:blendFilter];
+    }
     
     blendFilter.mix = 1.0f;
     [imageToProcess addTarget:blendFilter];
@@ -1603,7 +1633,9 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
     self.flashView.hidden = YES;
     self.timerView.hidden = YES;
     
+    [self.videoCamera pauseCameraCapture];
     [self.videoCamera rotateCamera];
+    [self.videoCamera resumeCameraCapture];
     if (self.cameraPosition == AVCaptureDevicePositionBack)
         self.cameraPosition = AVCaptureDevicePositionFront;
     else
