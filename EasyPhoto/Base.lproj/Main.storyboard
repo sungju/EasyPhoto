@@ -16,16 +16,16 @@
                                 <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                             </imageView>
-                            <view contentMode="scaleToFill" id="Yw6-Pf-VRK" userLabel="GPU Image View" customClass="GPUImageView">
+                            <view contentMode="scaleAspectFit" id="Yw6-Pf-VRK" userLabel="GPU Image View" customClass="GPUImageView">
                                 <rect key="frame" x="0.0" y="24" width="320" height="319"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                             </view>
-                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" id="Rc4-5e-537">
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" id="Rc4-5e-537">
                                 <rect key="frame" x="0.0" y="124" width="320" height="320"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                             </imageView>
-                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" id="gXL-qn-HPL">
+                            <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" id="gXL-qn-HPL">
                                 <rect key="frame" x="0.0" y="140" width="320" height="320"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                             </imageView>

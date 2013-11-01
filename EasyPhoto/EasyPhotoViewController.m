@@ -9,7 +9,7 @@
 #import "EasyPhotoViewController.h"
 #import "SendPhotoViewController.h"
 
-@interface EasyPhotoViewController ()
+@interface EasyPhotoViewController () <UINavigationControllerDelegate, UIImagePickerControllerDelegate>
 
 @property (nonatomic) GPUImageStillCamera *videoCamera;
 @property (nonatomic) GPUImageOutput<GPUImageInput> *filter;
@@ -1670,29 +1670,6 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
     self.flashView.hidden = YES;
 }
 
-- (IBAction)selectFromRoll:(id)sender {
-    if (self.originalImage != nil) {
-        self.filmRollButton.image = [UIImage imageNamed:@"filmroll.png"];
-        self.flipCameraButton.enabled = self.savedFlipMode;
-        self.flashButton.enabled = self.savedFlashMode;
-        self.timerBarButton.enabled = YES;
-        
-        self.originalImage = nil;
-        self.stillFilterView.image = nil;
-        [self setCameraFilter:self.filterNo];
-        [self.videoCamera resumeCameraCapture];
-        return;
-    }
-    
-    UIImagePickerController *imagePickerController = [[UIImagePickerController alloc] init];
-    
-    [imagePickerController setSourceType:UIImagePickerControllerSourceTypePhotoLibrary];
-    [imagePickerController setAllowsEditing:YES];
-    [self presentViewController:imagePickerController animated:YES completion:^{
-        
-    }];
-}
-
 - (IBAction)changeTimerMode:(id)sender {
     self.flashView.hidden = YES;
     self.timerView.hidden = !self.timerView.hidden;
@@ -1716,4 +1693,155 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
     [NSObject cancelPreviousPerformRequestsWithTarget:self];
     self.timerButton.hidden = YES;
 }
+
+- (IBAction)selectFromRoll:(id)sender {
+    if (self.originalImage != nil) {
+        self.filmRollButton.image = [UIImage imageNamed:@"filmroll.png"];
+        self.flipCameraButton.enabled = self.savedFlipMode;
+        self.flashButton.enabled = self.savedFlashMode;
+        self.timerBarButton.enabled = YES;
+        
+        self.originalImage = nil;
+        self.stillFilterView.image = nil;
+        [self setCameraFilter:self.filterNo];
+        [self.videoCamera resumeCameraCapture];
+        return;
+    }
+    
+    UIImagePickerController *imagePickerController = [[UIImagePickerController alloc] init];
+    
+    [imagePickerController setSourceType:UIImagePickerControllerSourceTypePhotoLibrary];
+    [imagePickerController setAllowsEditing:YES];
+    imagePickerController.delegate = self;
+    [self presentViewController:imagePickerController animated:YES completion:^{
+    }];
+}
+
+#pragma mark -
+#pragma mark UIImagePickerControllerDelegate
+
+- (CGAffineTransform) transformSize:(CGSize)imageSize orientation:(UIImageOrientation)orientation {
+    
+    CGAffineTransform transform = CGAffineTransformIdentity;
+    switch (orientation) {
+        case UIImageOrientationLeft: { // EXIF #8
+            CGAffineTransform txTranslate = CGAffineTransformMakeTranslation(imageSize.height, 0.0);
+            CGAffineTransform txCompound = CGAffineTransformRotate(txTranslate,M_PI_2);
+            transform = txCompound;
+            break;
+        }
+        case UIImageOrientationDown: { // EXIF #3
+            CGAffineTransform txTranslate = CGAffineTransformMakeTranslation(imageSize.width, imageSize.height);
+            CGAffineTransform txCompound = CGAffineTransformRotate(txTranslate,M_PI);
+            transform = txCompound;
+            break;
+        }
+        case UIImageOrientationRight: { // EXIF #6
+            CGAffineTransform txTranslate = CGAffineTransformMakeTranslation(0.0, imageSize.width);
+            CGAffineTransform txCompound = CGAffineTransformRotate(txTranslate,-M_PI_2);
+            transform = txCompound;
+            break;
+        }
+        case UIImageOrientationUp: // EXIF #1 - do nothing
+        default: // EXIF 2,4,5,7 - ignore
+            break;
+    }
+    return transform;
+    
+}
+
+-(UIImage *)cropImage:(UIImage *)sourceImage cropRect:(CGRect)cropRect aspectFitBounds:(CGSize)finalImageSize fillColor:(UIColor *)fillColor {
+    
+    CGImageRef sourceImageRef = sourceImage.CGImage;
+    
+    //Since the crop rect is in UIImageOrientationUp we need to transform it to match the source image.
+    CGAffineTransform rectTransform = [self transformSize:sourceImage.size orientation:sourceImage.imageOrientation];
+    CGRect transformedRect = CGRectApplyAffineTransform(cropRect, rectTransform);
+    
+    //Now we get just the region of the source image that we are interested in.
+    CGImageRef cropRectImage = CGImageCreateWithImageInRect(sourceImageRef, transformedRect);
+    
+    //Figure out which dimension fits within our final size and calculate the aspect correct rect that will fit in our new bounds
+    CGFloat horizontalRatio = finalImageSize.width / CGImageGetWidth(cropRectImage);
+    CGFloat verticalRatio = finalImageSize.height / CGImageGetHeight(cropRectImage);
+    CGFloat ratio = MIN(horizontalRatio, verticalRatio); //Aspect Fit
+    CGSize aspectFitSize = CGSizeMake(CGImageGetWidth(cropRectImage) * ratio, CGImageGetHeight(cropRectImage) * ratio);
+    
+    
+    CGContextRef context = CGBitmapContextCreate(NULL,
+                                                 finalImageSize.width,
+                                                 finalImageSize.height,
+                                                 CGImageGetBitsPerComponent(cropRectImage),
+                                                 0,
+                                                 CGImageGetColorSpace(cropRectImage),
+                                                 CGImageGetBitmapInfo(cropRectImage));
+    
+    if (context == NULL) {
+        //NSLog(@"NULL CONTEXT!");
+    }
+    
+    //Fill with our background color
+    CGContextSetFillColorWithColor(context, fillColor.CGColor);
+    CGContextFillRect(context, CGRectMake(0, 0, finalImageSize.width, finalImageSize.height));
+    
+    //We need to rotate and transform the context based on the orientation of the source image.
+    CGAffineTransform contextTransform = [self transformSize:finalImageSize orientation:sourceImage.imageOrientation];
+    CGContextConcatCTM(context, contextTransform);
+    
+    //Give the context a hint that we want high quality during the scale
+    CGContextSetInterpolationQuality(context, kCGInterpolationHigh);
+    
+    //Draw our image centered vertically and horizontally in our context.
+    CGContextDrawImage(context, CGRectMake((finalImageSize.width-aspectFitSize.width)/2, (finalImageSize.height-aspectFitSize.height)/2, aspectFitSize.width, aspectFitSize.height), cropRectImage);
+    
+    //Start cleaning up..
+    CGImageRelease(cropRectImage);
+    
+    CGImageRef finalImageRef = CGBitmapContextCreateImage(context);
+    UIImage *finalImage = [UIImage imageWithCGImage:finalImageRef];
+    
+    CGContextRelease(context);
+    CGImageRelease(finalImageRef);
+    return finalImage;
+}
+
+- (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info
+{
+    UIImage *imageEdited = [info objectForKey:UIImagePickerControllerEditedImage];
+    UIImage *imagePicked = [info objectForKey:UIImagePickerControllerOriginalImage];
+    
+    if (imagePicked != nil) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            self.stillFilterView.image = imageEdited;
+            
+            [self.videoCamera removeTarget:self.filter];
+            [self.videoCamera pauseCameraCapture];
+            self.filter = nil;
+            
+            self.filmRollButton.image = [UIImage imageNamed:@"camera.png"];
+            self.savedFlipMode = self.flipCameraButton.enabled;
+            self.savedFlashMode = self.flashButton.enabled;
+            
+            self.flipCameraButton.enabled = NO;
+            self.flashButton.enabled = NO;
+            self.timerBarButton.enabled = NO;
+            
+            /*
+            CGRect cropRect;
+
+            cropRect = [[info valueForKey:@"UIImagePickerControllerCropRect"] CGRectValue];
+            
+            CGSize finalSize = CGSizeMake(1280,1280);
+            
+            UIImage *image = [self cropImage:imagePicked cropRect:cropRect aspectFitBounds:finalSize fillColor:[UIColor clearColor]];
+             */
+            
+            self.originalImage = imageEdited;
+            [self setCameraFilter:self.filterNo];
+        });
+    }
+    [picker dismissViewControllerAnimated:YES completion:nil];
+}
+
+
 @end
