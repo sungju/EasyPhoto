@@ -60,24 +60,52 @@
 static inline double radians (double degrees) {return degrees * M_PI/180;}
 
 @implementation EasyPhotoViewController
+
+-(CMVideoDimensions)dimensions
+{
+    AVCaptureInput *input = [self.videoCamera.captureSession.inputs objectAtIndex:0];
+    AVCaptureInputPort *port = [input.ports objectAtIndex:0];
+    CMFormatDescriptionRef formatDescription = port.formatDescription;
+    CMVideoDimensions dimensions = CMVideoFormatDescriptionGetDimensions(formatDescription);
+    
+    return dimensions;
+}
+
 @synthesize cameraPosition = _cameraPosition;
 
-- (void)setCameraPosition:(int)cameraPosition
+- (void)adjustCropRatio:(int)cameraPosition
 {
-    _cameraPosition = cameraPosition;
-    
     float imageWidth, imageHeight;
     
     if (cameraPosition == AVCaptureDevicePositionBack) {
         imageWidth = 1080;
         imageHeight = 1920;
-    } else {
+        /*
+        CMVideoDimensions dimensions = [self dimensions];
+        if (dimensions.width != 0 && dimensions.height != 0) {
+            imageWidth = dimensions.height;
+            imageHeight = dimensions.width;
+        }
+         */
+    } else if (cameraPosition == AVCaptureDevicePositionFront){
         imageWidth = 480;
         imageHeight = 640;
+    } else {
+        CGSize imageSize = self.originalImage.size;
+        imageWidth = imageSize.width;
+        imageHeight = imageSize.height;
     }
+
     float startY = (imageHeight - imageWidth) / 2;
     self.cropStartY = startY / imageHeight;
     self.cropEndY = imageWidth / imageHeight;
+}
+
+- (void)setCameraPosition:(int)cameraPosition
+{
+    _cameraPosition = cameraPosition;
+    
+    [self adjustCropRatio:cameraPosition];
 }
 
 - (UIImage *)loadFrame:(int)no {
@@ -381,7 +409,7 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
 #pragma mark Camera Setup
 - (void)setupCamera {
     self.videoCamera = [[GPUImageStillCamera alloc]
-                        initWithSessionPreset:AVCaptureSessionPresetHigh cameraPosition:self.cameraPosition];
+                        initWithSessionPreset:AVCaptureSessionPresetPhoto cameraPosition:self.cameraPosition];
     
     self.videoCamera.outputImageOrientation = UIInterfaceOrientationPortrait;
     
@@ -1703,6 +1731,7 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
         
         self.originalImage = nil;
         self.stillFilterView.image = nil;
+        [self adjustCropRatio:self.cameraPosition];
         [self setCameraFilter:self.filterNo];
         [self.videoCamera resumeCameraCapture];
         return;
@@ -1837,6 +1866,7 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
              */
             
             self.originalImage = imageEdited;
+            [self adjustCropRatio:-1];
             [self setCameraFilter:self.filterNo];
         });
     }
